@@ -1,8 +1,11 @@
 import { Module } from '@nestjs/common';
 import { SalonController } from './salon.controller';
 import { SalonService } from './salon.service';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { Salon } from './salon.entity';
 
 @Module({
+  imports: [TypeOrmModule.forFeature([Salon])],
   controllers: [SalonController],
   providers: [SalonService],
 })
