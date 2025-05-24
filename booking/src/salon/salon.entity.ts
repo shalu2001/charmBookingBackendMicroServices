@@ -9,6 +9,9 @@ export class Salon {
   name: string;
 
   @Column()
+  ownerName: string;
+
+  @Column()
   location: string;
 
   @Column()
@@ -22,4 +25,7 @@ export class Salon {
 
   @Column()
   description: string;
+
+  @Column()
+  rating: number;
 }
