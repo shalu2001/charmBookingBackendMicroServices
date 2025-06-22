@@ -1,5 +1,11 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
-
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  ManyToMany,
+  JoinTable,
+} from 'typeorm';
+import { SalonService } from '../salon_services/salon_service.entity';
 @Entity()
 export class Salon {
   @PrimaryGeneratedColumn()
@@ -10,6 +16,20 @@ export class Salon {
 
   @Column()
   ownerName: string;
+
+  @ManyToMany(() => SalonService, (service) => service.serviceId)
+  @JoinTable({
+    name: 'salon_services',
+    joinColumn: {
+      name: 'salon_id',
+      referencedColumnName: 'id',
+    },
+    inverseJoinColumn: {
+      name: 'service_id',
+      referencedColumnName: 'serviceId',
+    },
+  })
+  services: SalonService[];
 
   @Column()
   location: string;
@@ -25,7 +45,4 @@ export class Salon {
 
   @Column()
   description: string;
-
-  @Column()
-  rating: number;
 }

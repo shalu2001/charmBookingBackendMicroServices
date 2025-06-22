@@ -1,5 +1,7 @@
+import { Salon } from './salon/salon.entity';
+import { SalonCategory } from './salon_categories/salon_category.entity';
+import { SalonService } from './salon_services/salon_service.entity';
 import { DataSource } from 'typeorm';
-import { Salon } from './src/salon/salon.entity';
 
 export const dataSource = new DataSource({
   type: 'mysql',
@@ -8,8 +10,8 @@ export const dataSource = new DataSource({
   username: 'root',
   password: 'Shalu.215023',
   database: 'charmbooking',
-  entities: [Salon],
-  // migrations: ['src/migrations/*.ts'],
+  entities: [Salon, SalonCategory, SalonService],
+  migrations: ['src/migrations/*.ts'],
   synchronize: true,
 });
 dataSource

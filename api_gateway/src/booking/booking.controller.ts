@@ -1,4 +1,4 @@
-import { Controller, Get, Inject } from '@nestjs/common';
+import { Controller, Get, Inject, Param } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 import { BookingService } from './booking.service';
@@ -15,6 +15,12 @@ export class BookingController {
     const pattern = { cmd: 'get_salon' };
     const data = {};
     return firstValueFrom(this.client.send<any>(pattern, data));
+  }
+
+  @Get('getSalonById/:id')
+  async getSalonById(@Param('id') id: number): Promise<any> {
+    const pattern = { cmd: 'get_salon_by_id' };
+    return firstValueFrom(this.client.send<any>(pattern, id));
   }
 
   @Get('math')
