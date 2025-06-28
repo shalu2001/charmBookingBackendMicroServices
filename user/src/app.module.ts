@@ -2,13 +2,12 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { dataSource } from '../../libs/common/src/data-source';
 import { ConfigModule } from '@nestjs/config';
+import { CommonModule } from '@charmbooking/common';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(dataSource.options),
+    CommonModule,
     UserModule,
     ConfigModule.forRoot({
       isGlobal: true,

@@ -1,4 +1,5 @@
 import { DataSource } from 'typeorm';
+import * as entities from './entities';
 
 export const dataSource = new DataSource({
   type: 'mysql',
@@ -7,7 +8,7 @@ export const dataSource = new DataSource({
   username: 'root',
   password: 'Shalu.215023',
   database: 'charmbooking',
-  entities: [__dirname + '/entities/*.ts'],
+  entities: Object.values(entities),
   migrations: [__dirname + '/migrations/*.ts'],
   synchronize: false,
 });

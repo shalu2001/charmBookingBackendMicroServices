@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { SalonModule } from './salon/salon.module';
-import { dataSource } from './data-source';
+import { CommonModule } from '@charmbooking/common';
 
 @Module({
-  imports: [TypeOrmModule.forRoot(dataSource.options), SalonModule],
+  imports: [CommonModule, SalonModule],
   controllers: [AppController],
   providers: [AppService],
 })

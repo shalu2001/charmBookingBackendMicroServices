@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { SalonController } from './salon.controller';
 import { SalonService } from './salon.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Salon } from '../../../libs/common/src/entities/salon.entity';
+import { Salon } from '@charmbooking/common';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Salon])],
