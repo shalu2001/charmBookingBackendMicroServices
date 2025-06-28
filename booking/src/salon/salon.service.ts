@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Salon } from '@charmbooking/common';
+import { SalonResponseDTO } from 'src/dto/salonResponse';
 
 @Injectable()
 export class SalonService {
@@ -19,15 +20,30 @@ export class SalonService {
     return this.salonRepository.save(newSalon);
   }
 
-  async findById(id: number): Promise<Salon> {
+  async findById(id: number): Promise<SalonResponseDTO> {
     const salon = await this.salonRepository.findOne({
       where: { id },
-      relations: ['services', 'services.categories'],
+      relations: ['services', 'services.categories', 'reviews', 'reviews.user'],
     });
 
     if (!salon) {
       throw new Error('Salon not found');
     }
-    return salon;
+    // Map reviews to only include user name
+    const reviews = salon.reviews.map((review) => ({
+      reviewId: review.reviewId,
+      rating: review.rating,
+      comment: review.comment,
+      createdAt: review.createdAt,
+      user: {
+        firstName: review.user?.firstName,
+        lastName: review.user?.lastName,
+      },
+    }));
+
+    return {
+      ...salon,
+      reviews,
+    };
   }
 }

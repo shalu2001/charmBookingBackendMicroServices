@@ -27,7 +27,7 @@ export class UserService {
         !createUserDto.password ||
         !createUserDto.firstName ||
         !createUserDto.lastName ||
-        !createUserDto.dateofBirth
+        !createUserDto.dateOfBirth
       ) {
         throw new RpcException('All fields are required - BE');
       }
@@ -44,6 +44,9 @@ export class UserService {
       // Create a new user instance
       const newUser = this.userRepository.create({
         ...createUserDto,
+        dateOfBirth: createUserDto.dateOfBirth
+          ? new Date(createUserDto.dateOfBirth)
+          : undefined,
         password: hashedPassword,
         role: createUserDto.role || 'user',
       });

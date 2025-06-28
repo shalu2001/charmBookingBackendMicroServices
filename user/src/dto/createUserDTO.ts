@@ -10,7 +10,7 @@ export class CreateUserDto {
   lastName: string;
 
   @IsDate()
-  dateofBirth: Date;
+  dateOfBirth: Date;
 
   @IsEmail()
   @Length(5, 50)
