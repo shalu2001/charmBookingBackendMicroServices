@@ -1,0 +1,5 @@
+packages:
+  - 'libs/*'
+  - 'api_gateway/*'
+  - 'booking/*'
+  - 'user/*'

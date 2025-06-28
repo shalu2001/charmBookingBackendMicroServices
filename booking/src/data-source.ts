@@ -1,6 +1,7 @@
-import { Salon } from './salon/salon.entity';
-import { SalonCategory } from './salon_categories/salon_category.entity';
-import { SalonService } from './salon_services/salon_service.entity';
+import { Salon } from '../../libs/common/src/entities/salon.entity';
+import { SalonCategory } from '../../libs/common/src/entities/salon_category.entity';
+import { SalonReview } from '../../libs/common/src/entities/salon_review.entity';
+import { SalonService } from '../../libs/common/src/entities/salon_service.entity';
 import { DataSource } from 'typeorm';
 
 export const dataSource = new DataSource({
@@ -10,9 +11,9 @@ export const dataSource = new DataSource({
   username: 'root',
   password: 'Shalu.215023',
   database: 'charmbooking',
-  entities: [Salon, SalonCategory, SalonService],
-  migrations: ['src/migrations/*.ts'],
-  synchronize: true,
+  entities: [Salon, SalonCategory, SalonService, SalonReview],
+  migrations: [__dirname + '/migrations/*.ts'],
+  synchronize: false,
 });
 dataSource
   .initialize()

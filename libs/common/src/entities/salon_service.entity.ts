@@ -1,4 +1,4 @@
-import { SalonCategory } from '../salon_categories/salon_category.entity';
+import { SalonCategory } from './salon_category.entity';
 import {
   Entity,
   Column,

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Salon } from './salon.entity';
 import { Repository } from 'typeorm';
+import { Salon } from '@charmbooking/common';
 
 @Injectable()
 export class SalonService {
@@ -22,7 +22,7 @@ export class SalonService {
   async findById(id: number): Promise<Salon> {
     const salon = await this.salonRepository.findOne({
       where: { id },
-      relations: ['categories', 'services'],
+      relations: ['services', 'services.categories'],
     });
 
     if (!salon) {

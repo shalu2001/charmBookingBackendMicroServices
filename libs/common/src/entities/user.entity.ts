@@ -1,4 +1,5 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { SalonReview } from './salon_review.entity';
 
 @Entity()
 export class User {
@@ -22,6 +23,9 @@ export class User {
 
   @Column({ length: 100 })
   role: string;
+
+  @OneToMany(() => SalonReview, (review) => review.userId)
+  reviews: SalonReview[];
 
   // @Column({ type: 'text', nullable: true })
   // profilePicture: string;

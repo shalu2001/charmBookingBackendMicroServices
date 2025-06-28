@@ -4,8 +4,11 @@ import {
   PrimaryGeneratedColumn,
   ManyToMany,
   JoinTable,
+  OneToMany,
 } from 'typeorm';
-import { SalonService } from '../salon_services/salon_service.entity';
+import { SalonService } from './salon_service.entity';
+import { IsLatitude, IsLongitude, IsEmail } from 'class-validator';
+import { SalonReview } from './salon_review.entity';
 @Entity()
 export class Salon {
   @PrimaryGeneratedColumn()
@@ -37,6 +40,7 @@ export class Salon {
   @Column()
   phone: string;
 
+  @IsEmail()
   @Column()
   email: string;
 
@@ -45,4 +49,15 @@ export class Salon {
 
   @Column()
   description: string;
+
+  @Column('decimal', { precision: 10, scale: 8 })
+  @IsLongitude()
+  longitude: number;
+
+  @Column('decimal', { precision: 10, scale: 8 })
+  @IsLatitude()
+  latitude: number;
+
+  @OneToMany(() => SalonReview, (review) => review.salon)
+  reviews: SalonReview[];
 }

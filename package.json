@@ -1,0 +1,18 @@
+{
+  "name": "charmbooking",
+  "private": true,
+  "version": "0.0.1",
+  "workspaces": [
+    "libs/*",
+    "api_gateway/*",
+    "booking/*",
+    "user/*"
+  ],
+  "scripts": {
+    "build:common": "tsc -b libs/common",
+    "build": "pnpm -r run build:common && pnpm -r run build"
+  },
+  "devDependencies": {
+    "typescript": "^5.1.0"
+  }
+}
