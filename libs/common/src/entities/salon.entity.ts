@@ -5,14 +5,16 @@ import {
   ManyToMany,
   JoinTable,
   OneToMany,
+  ManyToOne,
 } from 'typeorm';
 import { SalonService } from './salon_service.entity';
 import { IsLatitude, IsLongitude, IsEmail } from 'class-validator';
 import { SalonReview } from './salon_review.entity';
+import { SalonImage } from './salon_images.entity';
 @Entity()
 export class Salon {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column()
   name: string;
@@ -20,19 +22,10 @@ export class Salon {
   @Column()
   ownerName: string;
 
-  @ManyToMany(() => SalonService, (service) => service.serviceId)
-  @JoinTable({
-    name: 'salon_services',
-    joinColumn: {
-      name: 'salon_id',
-      referencedColumnName: 'id',
-    },
-    inverseJoinColumn: {
-      name: 'service_id',
-      referencedColumnName: 'serviceId',
-    },
+  @ManyToOne(() => SalonService, (service) => service.serviceId, {
+    cascade: true,
   })
-  services: SalonService[];
+  service: SalonService;
 
   @Column()
   location: string;
@@ -57,4 +50,7 @@ export class Salon {
 
   @OneToMany(() => SalonReview, (review) => review.salon)
   reviews: SalonReview[];
+
+  @OneToMany(() => SalonImage, (image) => image.salon)
+  images: SalonImage[];
 }

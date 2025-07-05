@@ -1,8 +1,25 @@
 import { config } from 'dotenv';
 import * as path from 'path';
+import * as fs from 'fs';
 
-// Load .env from root directory
-config({ path: path.resolve(process.cwd(), '.../../../.env') });
+// Try multiple possible locations for .env
+const possiblePaths = [
+  path.resolve(process.cwd(), '.env'), // Current directory
+  path.resolve(process.cwd(), '../.env'), // Parent directory
+  path.resolve(process.cwd(), '../../.env'), // Grandparent directory
+  path.resolve(__dirname, '../../../.env'), // Relative to this file
+];
+
+// Find the first path that exists
+const envPath = possiblePaths.find((p) => fs.existsSync(p));
+
+if (envPath) {
+  console.log(`Loading .env from: ${envPath}`);
+  config({ path: envPath });
+} else {
+  console.warn('No .env file found! Using default environment variables.');
+  config(); // Try to load from process.env anyway
+}
 
 type DatabaseConfig = {
   host: string | undefined;

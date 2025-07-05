@@ -37,9 +37,7 @@ export class UserService {
       if (existingUser) {
         throw new RpcException('User with this email already exists');
       }
-      if (!createUserDto.role) {
-        createUserDto.role = 'user';
-      }
+
       const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
       // Create a new user instance
       const newUser = this.userRepository.create({
@@ -48,7 +46,6 @@ export class UserService {
           ? new Date(createUserDto.dateOfBirth)
           : undefined,
         password: hashedPassword,
-        role: createUserDto.role || 'user',
       });
       return this.userRepository.save(newUser);
     } catch (error) {
@@ -78,16 +75,13 @@ export class UserService {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        role: user.role,
       });
-      user.token = token;
       await this.userRepository.save(user);
       return {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
-        role: user.role,
-        token: user.token,
+        token,
       };
     } catch (error) {
       // Re-throw RpcException if already thrown

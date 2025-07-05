@@ -1,4 +1,4 @@
-import { SalonService } from '@charmbooking/common';
+// import { SalonService } from '@charmbooking/common';
 
 export class UserMinimalDTO {
   firstName: string;
@@ -13,8 +13,21 @@ export class SalonReviewDTO {
   user: UserMinimalDTO;
 }
 
+export class SalonCategoryDTO {
+  categoryId: string;
+  name: string;
+}
+export class SalonServicesDTO {
+  serviceId: string;
+  name: string;
+  price: number;
+  duration: number;
+  bufferTime: number;
+  categories: SalonCategoryDTO[];
+}
+
 export class SalonResponseDTO {
-  id: number;
+  id: string;
   name: string;
   ownerName: string;
   location: string;
@@ -23,7 +36,6 @@ export class SalonResponseDTO {
   description: string;
   longitude: number;
   latitude: number;
-  services: SalonService[];
   reviews: SalonReviewDTO[];
 }
 
@@ -36,5 +48,4 @@ export class SalonRegisterDTO {
   description: string;
   longitude: number;
   latitude: number;
-  services?: SalonService[];
 }

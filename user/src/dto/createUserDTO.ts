@@ -20,10 +20,6 @@ export class CreateUserDto {
   @Length(6, 100)
   password: string;
 
-  @IsString()
-  @Length(1, 100)
-  role: string;
-
   // @IsOptional()
   // @IsString()
   // @Length(1, 10)

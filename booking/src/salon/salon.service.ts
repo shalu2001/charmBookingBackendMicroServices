@@ -20,10 +20,10 @@ export class SalonService {
     return this.salonRepository.save(newSalon);
   }
 
-  async findById(id: number): Promise<SalonResponseDTO> {
+  async findById(id: string): Promise<SalonResponseDTO> {
     const salon = await this.salonRepository.findOne({
       where: { id },
-      relations: ['services', 'services.categories', 'reviews', 'reviews.user'],
+      relations: ['service', 'service.categories', 'reviews', 'reviews.user'],
     });
 
     if (!salon) {

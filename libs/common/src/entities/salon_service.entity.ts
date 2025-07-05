@@ -1,3 +1,4 @@
+import { Salon } from './salon.entity';
 import { SalonCategory } from './salon_category.entity';
 import {
   Entity,
@@ -5,12 +6,21 @@ import {
   PrimaryGeneratedColumn,
   ManyToMany,
   JoinTable,
+  OneToMany,
+  JoinColumn,
 } from 'typeorm';
 
 @Entity()
 export class SalonService {
-  @PrimaryGeneratedColumn()
-  serviceId: number;
+  @PrimaryGeneratedColumn('uuid')
+  serviceId: string;
+
+  @Column()
+  salonId: string;
+
+  @OneToMany(() => Salon, (salon) => salon.service)
+  @JoinColumn({ name: 'salonId' })
+  salons: Salon[];
 
   @ManyToMany(() => SalonCategory, (category) => category.categoryId)
   @JoinTable({
@@ -34,4 +44,7 @@ export class SalonService {
 
   @Column()
   duration: number;
+
+  @Column()
+  bufferTime: number;
 }

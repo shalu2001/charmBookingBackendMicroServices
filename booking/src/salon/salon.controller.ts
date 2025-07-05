@@ -30,7 +30,7 @@ export class SalonController {
   }
 
   @MessagePattern({ cmd: 'get_salon_by_id' })
-  async getSalonById(id: number): Promise<any> {
+  async getSalonById(id: string): Promise<any> {
     try {
       const salon = await this.salonService.findById(id);
       return salon;
