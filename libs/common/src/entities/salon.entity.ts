@@ -45,9 +45,6 @@ export class Salon {
   email: string;
 
   @Column()
-  website: string;
-
-  @Column()
   description: string;
 
   @Column('decimal', { precision: 10, scale: 8 })

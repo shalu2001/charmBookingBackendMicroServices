@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { SalonService } from './salon.service';
-import { Salon } from '@charmbooking/common';
+import { SalonRegisterDTO } from 'src/dto/salonResponse';
 
 @Controller('salon')
 export class SalonController {
@@ -19,7 +19,7 @@ export class SalonController {
   }
 
   @MessagePattern({ cmd: 'register_salon' })
-  async registerSalon(salonData: Salon): Promise<any> {
+  async registerSalon(salonData: SalonRegisterDTO): Promise<any> {
     try {
       const newSalon = await this.salonService.createSalon(salonData);
       return newSalon;

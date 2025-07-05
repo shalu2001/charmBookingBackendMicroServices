@@ -20,10 +20,21 @@ export class SalonResponseDTO {
   location: string;
   phone: string;
   email: string;
-  website: string;
   description: string;
   longitude: number;
   latitude: number;
   services: SalonService[];
   reviews: SalonReviewDTO[];
+}
+
+export class SalonRegisterDTO {
+  name: string;
+  ownerName: string;
+  location: string;
+  phone: string;
+  email: string;
+  description: string;
+  longitude: number;
+  latitude: number;
+  services?: SalonService[];
 }

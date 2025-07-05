@@ -6,7 +6,7 @@ export const dataSource = new DataSource({
   host: 'localhost',
   port: 3306,
   username: 'root',
-  password: 'Shalu.215023',
+  password: 'shalud23',
   database: 'charmbooking',
   entities: Object.values(entities),
   migrations: [__dirname + '/migrations/*.ts'],

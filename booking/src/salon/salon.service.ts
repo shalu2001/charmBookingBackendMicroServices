@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Salon } from '@charmbooking/common';
-import { SalonResponseDTO } from 'src/dto/salonResponse';
+import { SalonRegisterDTO, SalonResponseDTO } from 'src/dto/salonResponse';
 
 @Injectable()
 export class SalonService {
@@ -15,7 +15,7 @@ export class SalonService {
     return this.salonRepository.find();
   }
 
-  async createSalon(salonData: Salon): Promise<Salon> {
+  async createSalon(salonData: SalonRegisterDTO): Promise<Salon> {
     const newSalon = this.salonRepository.create(salonData);
     return this.salonRepository.save(newSalon);
   }
