@@ -1,12 +1,15 @@
 import { DataSource } from 'typeorm';
 import * as entities from './entities';
+import { getConfig } from './getConfig';
+
+const config = getConfig();
 
 export const dataSource = new DataSource({
   type: 'mysql',
-  host: 'localhost',
-  port: 3306,
-  username: 'root',
-  password: 'shalud23',
+  host: config.database.host,
+  port: config.database.port,
+  username: config.database.username,
+  password: config.database.password,
   database: 'charmbooking',
   entities: Object.values(entities),
   migrations: [__dirname + '/migrations/*.ts'],
