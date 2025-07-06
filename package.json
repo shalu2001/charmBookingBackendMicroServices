@@ -11,9 +11,12 @@
   "scripts": {
     "build:common": "tsc -b libs/common",
     "build": "pnpm -r run build:common && pnpm -r run build",
-    "start": "pnpm --parallel -r run start:dev"
+    "start": "pnpm --parallel -r run start:dev",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "devDependencies": {
-    "typescript": "^5.1.0"
+    "typescript": "^5.1.0",
+    "globals": "^16.0.0"
   }
 }
