@@ -6,8 +6,8 @@ import {
   PrimaryGeneratedColumn,
   ManyToMany,
   JoinTable,
-  OneToMany,
   JoinColumn,
+  ManyToOne,
 } from 'typeorm';
 
 @Entity()
@@ -18,9 +18,11 @@ export class SalonService {
   @Column()
   salonId: string;
 
-  @OneToMany(() => Salon, (salon) => salon.service)
+  @ManyToOne(() => Salon, (salon) => salon.id, {
+    cascade: true,
+  })
   @JoinColumn({ name: 'salonId' })
-  salons: Salon[];
+  salon: Salon;
 
   @ManyToMany(() => SalonCategory, (category) => category.categoryId)
   @JoinTable({

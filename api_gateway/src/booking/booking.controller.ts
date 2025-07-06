@@ -10,14 +10,14 @@ export class BookingController {
     @Inject('BOOKING_SERVICE') private client: ClientProxy,
   ) {}
 
-  @Get('getSalon')
+  @Get('getSalons')
   async getSalon(): Promise<any> {
     const pattern = { cmd: 'get_salon' };
     const data = {};
     return firstValueFrom(this.client.send<any>(pattern, data));
   }
 
-  @Get('getSalonById/:id')
+  @Get('getSalon/:id')
   async getSalonById(@Param('id') id: number): Promise<any> {
     const pattern = { cmd: 'get_salon_by_id' };
     return firstValueFrom(this.client.send<any>(pattern, id));
