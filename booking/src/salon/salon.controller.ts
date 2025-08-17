@@ -19,14 +19,29 @@ export class SalonController {
   }
 
   @MessagePattern({ cmd: 'register_salon' })
-  async registerSalon(salonData: SalonRegisterDTO): Promise<any> {
-    try {
-      const newSalon = await this.salonService.createSalon(salonData);
-      return newSalon;
-    } catch (error) {
-      console.error('Error registering salon:', error);
-      throw new Error('Failed to register salon');
-    }
+  async registerSalon({
+    salonData,
+    images,
+  }: {
+    salonData: SalonRegisterDTO;
+    images: Array<Express.Multer.File>;
+  }): Promise<any> {
+    console.log('Received salon data:', salonData);
+    const newSalon = await this.salonService.createSalon(salonData, images);
+    return newSalon;
+  }
+
+  @MessagePattern({ cmd: 'login_salon' })
+  async loginSalon({
+    email,
+    password,
+  }: {
+    email: string;
+    password: string;
+  }): Promise<any> {
+    // console.log('Received login data:', { email });
+    const salon = await this.salonService.salonLogin(email, password);
+    return salon;
   }
 
   @MessagePattern({ cmd: 'get_salon_by_id' })

@@ -1,23 +1,91 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Salon } from '@charmbooking/common';
+import { getConfig, Salon, SalonImage } from '@charmbooking/common';
 import { SalonRegisterDTO, SalonResponseDTO } from 'src/dto/salonResponse';
+import { GenericError } from '@charmbooking/common';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class SalonService {
   constructor(
     @InjectRepository(Salon)
     private salonRepository: Repository<Salon>,
+    @InjectRepository(SalonImage)
+    private salonImageRepository: Repository<SalonImage>,
   ) {}
 
+  private async checkSalonExists(email: string): Promise<void> {
+    const salon = await this.salonRepository.findOne({
+      where: { email: email },
+    });
+    if (salon) {
+      throw new GenericError(
+        `Salon with email ${email} already exists.`,
+        HttpStatus.CONFLICT,
+      );
+    }
+  }
   async findAll(): Promise<Salon[]> {
     return this.salonRepository.find();
   }
 
-  async createSalon(salonData: SalonRegisterDTO): Promise<Salon> {
-    const newSalon = this.salonRepository.create(salonData);
-    return this.salonRepository.save(newSalon);
+  async createSalon(
+    salonData: SalonRegisterDTO,
+    images: Array<Express.Multer.File>,
+  ): Promise<Salon> {
+    console.log('salon', salonData);
+    await this.checkSalonExists(salonData.email);
+
+    //hash password before saving to db
+    const hashedPassword = await bcrypt.hash(salonData.password, 10);
+
+    const newSalon = this.salonRepository.create({
+      ...salonData,
+      password: hashedPassword,
+    });
+    if (!newSalon) {
+      throw new GenericError(
+        'Failed to create salon',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    const savedSalon = await this.salonRepository.save(newSalon);
+
+    // Save image URLs with salonId and salon reference
+    if (images && images.length > 0) {
+      const baseUrl = `http://localhost:${getConfig().services.apiGateway.port}`;
+      const salonImages = images.map((image) => ({
+        url: `${baseUrl}/uploads/${image.filename}`,
+        salonId: Number(savedSalon.id),
+        salon: savedSalon,
+      }));
+      await this.salonImageRepository.save(salonImages);
+    }
+
+    return savedSalon;
+  }
+
+  async salonLogin(email: string, password: string): Promise<SalonResponseDTO> {
+    const salon = await this.salonRepository.findOne({
+      where: { email },
+    });
+    if (!salon) {
+      throw new GenericError(
+        'Invalid email or password',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, salon.password);
+    if (!isPasswordValid) {
+      throw new GenericError(
+        'Invalid email or password',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+
+    return salon;
   }
 
   async findById(id: string): Promise<SalonResponseDTO> {
