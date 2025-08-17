@@ -40,6 +40,12 @@ export class BookingController {
     return firstValueFrom(this.client.send<any>(pattern, salonData));
   }
 
+  @Get('findAllSalonCategories')
+  async findAllSalonCategories(): Promise<any> {
+    const pattern = { cmd: 'findAllSalonCategories' };
+    return firstValueFrom(this.client.send<any>(pattern, {}));
+  }
+
   @Get('math')
   async getMath(): Promise<number> {
     const pattern = { cmd: 'sum' };
