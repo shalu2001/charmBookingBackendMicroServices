@@ -44,6 +44,12 @@ export class SalonController {
     );
   }
 
+  @Post('loginSalon')
+  async loginSalon(@Body() loginData: any): Promise<any> {
+    const pattern = { cmd: 'login_salon' };
+    return firstValueFrom(this.client.send<any>(pattern, loginData));
+  }
+
   @Get('findAllSalonCategories')
   async findAllSalonCategories(): Promise<any> {
     const pattern = { cmd: 'findAllSalonCategories' };

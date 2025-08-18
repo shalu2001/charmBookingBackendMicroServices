@@ -46,12 +46,7 @@ export class SalonController {
 
   @MessagePattern({ cmd: 'get_salon_by_id' })
   async getSalonById(id: string): Promise<any> {
-    try {
-      const salon = await this.salonService.findById(id);
-      return salon;
-    } catch (error) {
-      console.error('Error fetching salon by ID:', error);
-      throw new Error('Failed to fetch salon by ID');
-    }
+    const salon = await this.salonService.findById(id);
+    return salon;
   }
 }

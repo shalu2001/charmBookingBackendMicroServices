@@ -5,6 +5,7 @@ import { getConfig, Salon, SalonImage } from '@charmbooking/common';
 import { SalonRegisterDTO, SalonResponseDTO } from 'src/dto/salonResponse';
 import { GenericError } from '@charmbooking/common';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class SalonService {
@@ -13,6 +14,7 @@ export class SalonService {
     private salonRepository: Repository<Salon>,
     @InjectRepository(SalonImage)
     private salonImageRepository: Repository<SalonImage>,
+    private jwtService: JwtService,
   ) {}
 
   private async checkSalonExists(email: string): Promise<void> {
@@ -66,7 +68,7 @@ export class SalonService {
     return savedSalon;
   }
 
-  async salonLogin(email: string, password: string): Promise<SalonResponseDTO> {
+  async salonLogin(email: string, password: string): Promise<any> {
     const salon = await this.salonRepository.findOne({
       where: { email },
     });
@@ -84,10 +86,17 @@ export class SalonService {
         HttpStatus.UNAUTHORIZED,
       );
     }
-
-    return salon;
+    //generate JWT token
+    const token = this.jwtService.sign({
+      id: salon?.id,
+      email: salon?.email,
+      role: 'salonOwner',
+    });
+    const { password: _, ...salonWithoutPassword } = salon;
+    return { token, salon: salonWithoutPassword };
   }
 
+  //fetches salon details for the salonPage
   async findById(id: string): Promise<SalonResponseDTO> {
     const salon = await this.salonRepository.findOne({
       where: { id },
