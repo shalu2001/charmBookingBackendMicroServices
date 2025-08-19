@@ -13,12 +13,21 @@ export class SalonCategoryService {
     private salonCategoryRepository: Repository<SalonCategory>,
   ) {}
 
-  create(createSalonCategoryDto: CreateSalonCategoryDto) {
-    return 'This action adds a new salonCategory';
+  async create(createSalonCategoryDto: CreateSalonCategoryDto) {
+    const newCategory = this.salonCategoryRepository.create(
+      createSalonCategoryDto,
+    );
+    if (!newCategory) {
+      throw new GenericError(
+        'Error creating salon category.',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+    return await this.salonCategoryRepository.save(newCategory);
   }
 
-  findAllCategories() {
-    const categories = this.salonCategoryRepository.find();
+  async findAllCategories() {
+    const categories = await this.salonCategoryRepository.find();
     if (!categories) {
       throw new GenericError(
         'No salon categories found.',
@@ -28,15 +37,37 @@ export class SalonCategoryService {
     return categories;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} salonCategory`;
+  async findOne(id: number) {
+    const category = await this.salonCategoryRepository.findOne({
+      where: { categoryId: id },
+    });
+    if (!category) {
+      throw new GenericError(
+        `Salon category with id ${id} not found.`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return category;
   }
 
-  update(id: number, updateSalonCategoryDto: UpdateSalonCategoryDto) {
-    return `This action updates a #${id} salonCategory`;
+  async update(updateSalonCategoryDto: UpdateSalonCategoryDto) {
+    const updateResult = await this.salonCategoryRepository.update(
+      { categoryId: updateSalonCategoryDto.id }, // criteria
+      { name: updateSalonCategoryDto.name },
+    );
+    if (updateResult.affected === 0) {
+      throw new GenericError(`Salon category not found.`, HttpStatus.NOT_FOUND);
+    }
+    return this.findOne(updateSalonCategoryDto.id);
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} salonCategory`;
+  async remove(id: number) {
+    const deleteResult = await this.salonCategoryRepository.delete({
+      categoryId: id,
+    });
+    if (!deleteResult) {
+      throw new GenericError(`Salon category not found.`, HttpStatus.NOT_FOUND);
+    }
+    return { message: `Salon category with id ${id} removed successfully.` };
   }
 }

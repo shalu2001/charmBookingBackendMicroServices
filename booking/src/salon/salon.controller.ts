@@ -7,15 +7,10 @@ import { SalonRegisterDTO } from 'src/dto/salonResponse';
 export class SalonController {
   constructor(private readonly salonService: SalonService) {}
 
-  @MessagePattern({ cmd: 'get_salon' })
-  async getSalon(): Promise<any> {
-    try {
-      const salons = await this.salonService.findAll();
-      return salons;
-    } catch (error) {
-      console.error('Error fetching salons:', error);
-      throw new Error('Failed to fetch salons');
-    }
+  @MessagePattern({ cmd: 'get_salons' })
+  async getSalons(): Promise<any> {
+    const salons = await this.salonService.findAll();
+    return salons;
   }
 
   @MessagePattern({ cmd: 'register_salon' })

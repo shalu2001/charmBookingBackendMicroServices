@@ -8,27 +8,27 @@ import { UpdateSalonServiceDto } from './dto/update-salon_service.dto';
 export class SalonServiceController {
   constructor(private readonly salonServiceService: SalonServiceService) {}
 
-  @MessagePattern('createSalonService')
+  @MessagePattern({ cmd: 'createSalonService' })
   create(@Payload() createSalonServiceDto: CreateSalonServiceDto) {
     return this.salonServiceService.create(createSalonServiceDto);
   }
 
-  @MessagePattern('findAllSalonService')
+  @MessagePattern({ cmd: 'findAllSalonService' })
   findAll() {
     return this.salonServiceService.findAll();
   }
 
-  @MessagePattern('findOneSalonService')
+  @MessagePattern({ cmd: 'findOneSalonService' })
   findOne(@Payload() id: string) {
     return this.salonServiceService.findOne(id);
   }
 
-  @MessagePattern('findSalonServiceBySalonId')
+  @MessagePattern({ cmd: 'findSalonServiceBySalonId' })
   findBySalon(@Payload() salonId: string) {
     return this.salonServiceService.findBySalon(salonId);
   }
 
-  @MessagePattern('updateSalonService')
+  @MessagePattern({ cmd: 'updateSalonService' })
   update(@Payload() updateSalonServiceDto: UpdateSalonServiceDto) {
     return this.salonServiceService.update(
       updateSalonServiceDto.serviceId,
@@ -36,7 +36,7 @@ export class SalonServiceController {
     );
   }
 
-  @MessagePattern('removeSalonService')
+  @MessagePattern({ cmd: 'removeSalonService' })
   remove(@Payload() id: string) {
     return this.salonServiceService.remove(id);
   }

@@ -4,6 +4,12 @@ import { BookingService } from './booking.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { SalonServiceController } from './salon_service.controller';
 import { SalonController } from './salon.controller';
+import { SalonCategoryController } from './salon_category.controller';
+import { JwtModule } from '@nestjs/jwt/dist/jwt.module';
+import { getConfig } from '@charmbooking/common';
+
+const config = getConfig();
+
 @Module({
   imports: [
     ClientsModule.register([
@@ -13,8 +19,17 @@ import { SalonController } from './salon.controller';
         options: { host: 'localhost', port: 3001 },
       },
     ]),
+    JwtModule.register({
+      secret: config.jwt.secret,
+      signOptions: { expiresIn: '1d' },
+    }),
   ],
-  controllers: [BookingController, SalonServiceController, SalonController],
+  controllers: [
+    BookingController,
+    SalonServiceController,
+    SalonController,
+    SalonCategoryController,
+  ],
   providers: [BookingService],
 })
 export class BookingModule {}

@@ -8,30 +8,27 @@ import { UpdateSalonCategoryDto } from './dto/update-salon_category.dto';
 export class SalonCategoryController {
   constructor(private readonly salonCategoryService: SalonCategoryService) {}
 
-  @MessagePattern('createSalonCategory')
-  create(@Payload() createSalonCategoryDto: CreateSalonCategoryDto) {
+  @MessagePattern({ cmd: 'create_salon_category' })
+  createCategory(@Payload() createSalonCategoryDto: CreateSalonCategoryDto) {
     return this.salonCategoryService.create(createSalonCategoryDto);
   }
 
-  @MessagePattern('findAllSalonCategories')
+  @MessagePattern({ cmd: 'find_all_salon_categories' })
   findAll() {
     return this.salonCategoryService.findAllCategories();
   }
 
-  @MessagePattern('findOneSalonCategory')
+  @MessagePattern({ cmd: 'find_one_salon_category' })
   findOne(@Payload() id: number) {
     return this.salonCategoryService.findOne(id);
   }
 
-  @MessagePattern('updateSalonCategory')
+  @MessagePattern({ cmd: 'update_salon_category' })
   update(@Payload() updateSalonCategoryDto: UpdateSalonCategoryDto) {
-    return this.salonCategoryService.update(
-      updateSalonCategoryDto.id,
-      updateSalonCategoryDto,
-    );
+    return this.salonCategoryService.update(updateSalonCategoryDto);
   }
 
-  @MessagePattern('removeSalonCategory')
+  @MessagePattern({ cmd: 'remove_salon_category' })
   remove(@Payload() id: number) {
     return this.salonCategoryService.remove(id);
   }

@@ -19,8 +19,8 @@ export class SalonController {
   constructor(@Inject('BOOKING_SERVICE') private client: ClientProxy) {}
 
   @Get('getSalons')
-  async getSalon(): Promise<any> {
-    const pattern = { cmd: 'get_salon' };
+  async getSalons(): Promise<any> {
+    const pattern = { cmd: 'get_salons' };
     const data = {};
     return firstValueFrom(this.client.send<any>(pattern, data));
   }

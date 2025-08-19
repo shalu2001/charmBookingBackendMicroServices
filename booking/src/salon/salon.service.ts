@@ -28,8 +28,14 @@ export class SalonService {
       );
     }
   }
-  async findAll(): Promise<Salon[]> {
-    return this.salonRepository.find();
+  async findAll(): Promise<SalonResponseDTO[]> {
+    const salons = await this.salonRepository.find();
+    // Omit password field from each salon
+    const salonsWithoutPassword = salons.map(({ password, ...rest }) => rest);
+    if (!salons || salons.length === 0) {
+      throw new GenericError('No salons found', HttpStatus.NOT_FOUND);
+    }
+    return salonsWithoutPassword;
   }
 
   async createSalon(
@@ -118,9 +124,12 @@ export class SalonService {
       },
     }));
 
+    // Omit password from the response
+    const { password, ...salonWithoutPassword } = salon;
+
     return {
-      ...salon,
+      ...salonWithoutPassword,
       reviews,
-    };
+    } as SalonResponseDTO;
   }
 }

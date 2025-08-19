@@ -1,1 +1,3 @@
-export class CreateSalonCategoryDto {}
+export class CreateSalonCategoryDto {
+  name: string;
+}

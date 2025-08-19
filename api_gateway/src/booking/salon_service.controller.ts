@@ -8,45 +8,43 @@ export class SalonServiceController {
 
   @Post('create')
   async createSalonService(@Body() createSalonServiceDto: any): Promise<any> {
+    const pattern = { cmd: 'createSalonService' };
     return await firstValueFrom(
-      this.client.send<any>('createSalonService', createSalonServiceDto),
+      this.client.send<any>(pattern, createSalonServiceDto),
     );
   }
 
   @Get('findAll')
   async findAllSalonServices(): Promise<any> {
-    return await firstValueFrom(
-      this.client.send<any>('findAllSalonService', {}),
-    );
+    const pattern = { cmd: 'findAllSalonService' };
+    return await firstValueFrom(this.client.send<any>(pattern, {}));
   }
 
   @Get('findOne/:id')
   async findOneSalonService(@Param('id') id: string): Promise<any> {
-    return await firstValueFrom(
-      this.client.send<any>('findOneSalonService', id),
-    );
+    const pattern = { cmd: 'findOneSalonService' };
+    return await firstValueFrom(this.client.send<any>(pattern, id));
   }
 
   @Get('findBySalon/:salonId')
   async findSalonServicesBySalonId(
     @Param('salonId') salonId: string,
   ): Promise<any> {
-    return await firstValueFrom(
-      this.client.send<any>('findSalonServiceBySalonId', salonId),
-    );
+    const pattern = { cmd: 'findSalonServiceBySalonId' };
+    return await firstValueFrom(this.client.send<any>(pattern, salonId));
   }
 
   @Post('update')
   async updateSalonService(@Body() updateSalonServiceDto: any): Promise<any> {
+    const pattern = { cmd: 'updateSalonService' };
     return await firstValueFrom(
-      this.client.send<any>('updateSalonService', updateSalonServiceDto),
+      this.client.send<any>(pattern, updateSalonServiceDto),
     );
   }
 
   @Post('remove/:id')
   async removeSalonService(@Param('id') id: string): Promise<any> {
-    return await firstValueFrom(
-      this.client.send<any>('removeSalonService', id),
-    );
+    const pattern = { cmd: 'removeSalonService' };
+    return await firstValueFrom(this.client.send<any>(pattern, id));
   }
 }
