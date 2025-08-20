@@ -16,7 +16,7 @@ export class SalonWorker {
   workerId: string;
 
   @Column()
-  password: string;
+  name: string;
 
   @Column()
   salonId: string;

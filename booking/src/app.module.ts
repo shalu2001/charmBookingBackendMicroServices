@@ -5,9 +5,16 @@ import { SalonModule } from './salon/salon.module';
 import { CommonModule } from '@charmbooking/common';
 import { SalonServiceModule } from './salon_service/salon_service.module';
 import { SalonCategoryModule } from './salon_category/salon_category.module';
+import { SalonWorkerModule } from './salon_worker/salon_worker.module';
 
 @Module({
-  imports: [CommonModule, SalonModule, SalonServiceModule, SalonCategoryModule],
+  imports: [
+    CommonModule,
+    SalonModule,
+    SalonServiceModule,
+    SalonCategoryModule,
+    SalonWorkerModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

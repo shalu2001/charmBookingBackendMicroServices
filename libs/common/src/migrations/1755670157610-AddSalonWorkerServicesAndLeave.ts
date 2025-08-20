@@ -4,6 +4,10 @@ export class AddSalonWorkerServicesAndLeave1755670157610
   implements MigrationInterface
 {
   public async up(queryRunner: QueryRunner): Promise<void> {
+    // Rename 'password' column to 'name' in salon_worker table
+    await queryRunner.query(
+      'ALTER TABLE salon_worker CHANGE password name varchar(255)',
+    );
     // Create join table for salon_worker and salon_service
     await queryRunner.query(`
             CREATE TABLE salon_worker_services (
