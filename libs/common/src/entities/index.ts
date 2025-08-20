@@ -9,3 +9,5 @@ export * from './salon_weekly_hours.entity';
 export * from './salon_service_hours.entity';
 export * from './booking.entity';
 export * from './payment_details.entity';
+export * from './salon_worker.entity';
+export * from './salon_admin.entity';

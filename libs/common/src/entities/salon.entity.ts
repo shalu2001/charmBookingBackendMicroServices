@@ -32,11 +32,6 @@ export class Salon {
   email: string;
 
   @Column()
-  @MinLength(8)
-  @MaxLength(20)
-  password: string;
-
-  @Column()
   description: string;
 
   @Column('decimal', { precision: 10, scale: 8 })

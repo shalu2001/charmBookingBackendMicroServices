@@ -11,6 +11,7 @@ import { Salon } from './salon.entity';
 import { SalonService } from './salon_service.entity';
 import { PaymentDetails } from './payment_details.entity';
 import { BookingStatus } from '../enums/bookingStatus';
+import { SalonWorker } from './salon_worker.entity';
 
 @Entity('bookings')
 export class Booking {
@@ -28,6 +29,9 @@ export class Booking {
 
   @Column()
   payment_id: number;
+
+  @Column({ nullable: true })
+  worker_id: string;
 
   @Column({ type: 'date' })
   booking_date: string;
@@ -63,4 +67,10 @@ export class Booking {
   })
   @JoinColumn({ name: 'payment_id' })
   payment: PaymentDetails;
+
+  @ManyToOne(() => SalonWorker, (worker) => worker.workerId, {
+    onDelete: 'SET NULL',
+  })
+  @JoinColumn({ name: 'worker_id' })
+  worker: SalonWorker;
 }

@@ -9,6 +9,7 @@ import {
   JoinColumn,
   ManyToOne,
 } from 'typeorm';
+import { SalonWorker } from './salon_worker.entity';
 
 @Entity()
 export class SalonService {
@@ -49,4 +50,7 @@ export class SalonService {
 
   @Column()
   bufferTime: number;
+
+  @ManyToMany(() => SalonWorker, (worker) => worker.services)
+  workers: SalonWorker[];
 }
