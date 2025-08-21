@@ -1,19 +1,44 @@
-import { Body, Controller, Get, Inject, Param, Post } from '@nestjs/common';
+import {
+  BookingRequestDTO,
+  BookingSlot,
+  GetAvailableSlotsDto,
+} from '@charmbooking/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Param,
+  Post,
+  Query,
+} from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { BookingService } from './booking.service';
 
 @Controller('booking')
 export class BookingController {
-  constructor(
-    private readonly appService: BookingService,
-    @Inject('BOOKING_SERVICE') private client: ClientProxy,
-  ) {}
+  constructor(@Inject('BOOKING_SERVICE') private client: ClientProxy) {}
 
-  @Get('math')
-  async getMath(): Promise<number> {
-    const pattern = { cmd: 'sum' };
-    const data = [1, 2];
-    return firstValueFrom(this.client.send<number>(pattern, data));
+  @Get(':salonId/getAvailableSlots')
+  async getAvailableSlots(
+    @Param('salonId') salonId: string,
+    @Query('serviceId') serviceId: string,
+    @Query('date') date: string,
+    @Query('startTime') startTime: string,
+  ): Promise<BookingSlot[]> {
+    const pattern = { cmd: 'get_available_slots' };
+    const request: GetAvailableSlotsDto = {
+      salonId,
+      serviceId,
+      date,
+      startTime,
+    };
+    return firstValueFrom(this.client.send<BookingSlot[]>(pattern, request));
+  }
+
+  @Post(':salonId/book')
+  async bookSlot(@Body() bookingData: BookingRequestDTO): Promise<any> {
+    const pattern = { cmd: 'book_slot' };
+    return firstValueFrom(this.client.send(pattern, bookingData));
   }
 }

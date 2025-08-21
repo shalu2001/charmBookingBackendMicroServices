@@ -11,3 +11,4 @@ export * from './booking.entity';
 export * from './payment_details.entity';
 export * from './salon_worker.entity';
 export * from './salon_admin.entity';
+export * from './salon_worker_leave.entity';

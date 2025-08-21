@@ -1,6 +1,5 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from '../../../libs/common/src/entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from 'src/dto/createUserDTO';
 import * as bcrypt from 'bcrypt';
@@ -8,6 +7,7 @@ import { RpcException } from '@nestjs/microservices';
 import { JwtService } from '@nestjs/jwt';
 import { LoginUserResponseDTO } from 'src/dto/loginUserResponseDTO';
 import { LoginUserDto } from 'src/dto/loginUserRequestDTO';
+import { GenericError, User, UserRole } from '@charmbooking/common';
 
 @Injectable()
 export class UserService {
@@ -19,44 +19,35 @@ export class UserService {
 
   //-----------------------Register a new user
   async register(createUserDto: CreateUserDto): Promise<User> {
-    // Check if the user already exists
-    try {
-      // console.log('Registering user:', createUserDto);
-      if (
-        !createUserDto.email ||
-        !createUserDto.password ||
-        !createUserDto.firstName ||
-        !createUserDto.lastName ||
-        !createUserDto.dateOfBirth
-      ) {
-        throw new RpcException('All fields are required - BE');
-      }
-      const existingUser = await this.userRepository.findOne({
-        where: { email: createUserDto.email },
-      });
-      if (existingUser) {
-        throw new RpcException('User with this email already exists');
-      }
-
-      const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
-      // Create a new user instance
-      const newUser = this.userRepository.create({
-        ...createUserDto,
-        dateOfBirth: createUserDto.dateOfBirth
-          ? new Date(createUserDto.dateOfBirth)
-          : undefined,
-        password: hashedPassword,
-      });
-      return this.userRepository.save(newUser);
-    } catch (error) {
-      // Re-throw RpcException if already thrown
-      if (error instanceof RpcException) {
-        throw error;
-      }
-
-      // Wrap unexpected errors
-      throw new RpcException(`Error registering user: ${error}`);
+    if (
+      !createUserDto.email ||
+      !createUserDto.password ||
+      !createUserDto.firstName ||
+      !createUserDto.lastName ||
+      !createUserDto.dateOfBirth
+    ) {
+      throw new GenericError('All fields are required', HttpStatus.BAD_REQUEST);
     }
+    const existingUser = await this.userRepository.findOne({
+      where: { email: createUserDto.email },
+    });
+    if (existingUser) {
+      throw new GenericError(
+        'User with this email already exists',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+    // Create a new user instance
+    const newUser = this.userRepository.create({
+      ...createUserDto,
+      dateOfBirth: createUserDto.dateOfBirth
+        ? new Date(createUserDto.dateOfBirth)
+        : undefined,
+      password: hashedPassword,
+    });
+    return this.userRepository.save(newUser);
   }
 
   //-----------------------User logging
@@ -75,6 +66,7 @@ export class UserService {
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
+        role: UserRole.Customer,
       });
       await this.userRepository.save(user);
       return {

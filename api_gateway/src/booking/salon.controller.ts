@@ -32,13 +32,12 @@ export class SalonController {
   }
 
   @Post('registerSalon')
-  @UseInterceptors(FilesInterceptor('images', 10, multerConfig))
+  @UseInterceptors(FilesInterceptor('salonImages', 10, multerConfig))
   async registerSalon(
     @Body() salonData: any,
     @UploadedFiles() images: Array<Express.Multer.File>,
   ): Promise<any> {
     const pattern = { cmd: 'register_salon' };
-    console.log('images', images);
     return firstValueFrom(
       this.client.send<any>(pattern, { salonData, images }),
     );

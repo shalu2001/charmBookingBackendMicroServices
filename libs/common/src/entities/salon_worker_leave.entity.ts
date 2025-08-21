@@ -1,8 +1,18 @@
-import { Entity, Column, Timestamp, ManyToOne } from 'typeorm';
+import {
+  Entity,
+  Column,
+  Timestamp,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { SalonWorker } from './salon_worker.entity';
 
+//TODO: FIX this entity
 @Entity('salon_worker_leave')
 export class SalonWorkerLeave {
+  @PrimaryGeneratedColumn('uuid')
+  id: number;
+
   @Column()
   workerId: number;
   @ManyToOne(() => SalonWorker, (worker) => worker.workerId, {
@@ -10,12 +20,12 @@ export class SalonWorkerLeave {
   })
   worker: SalonWorker;
 
-  @Column()
-  startDate: Timestamp;
+  @Column({ type: 'date' })
+  date: Date;
 
-  @Column()
-  endDate: Timestamp;
+  @Column({ type: 'time' })
+  startTime: Date;
 
-  @Column()
-  reason: string;
+  @Column({ type: 'time' })
+  endTime: Date;
 }

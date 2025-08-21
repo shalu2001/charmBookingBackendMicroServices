@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { BookingController } from './booking.controller';
-import { BookingService } from './booking.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { SalonServiceController } from './salon_service.controller';
 import { SalonController } from './salon.controller';
@@ -32,6 +31,5 @@ const config = getConfig();
     SalonCategoryController,
     SalonWorkerController,
   ],
-  providers: [BookingService],
 })
 export class BookingModule {}

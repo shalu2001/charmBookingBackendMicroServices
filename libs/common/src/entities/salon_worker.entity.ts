@@ -6,9 +6,11 @@ import {
   JoinColumn,
   ManyToMany,
   JoinTable,
+  OneToMany,
 } from 'typeorm';
 import { Salon } from './salon.entity';
 import { SalonService } from './salon_service.entity';
+import { SalonWorkerLeave } from './salon_worker_leave.entity';
 
 @Entity('salon_worker')
 export class SalonWorker {
@@ -40,4 +42,7 @@ export class SalonWorker {
     },
   })
   services: SalonService[];
+
+  @OneToMany(() => SalonWorkerLeave, (leave) => leave.worker)
+  leaves: SalonWorkerLeave[];
 }

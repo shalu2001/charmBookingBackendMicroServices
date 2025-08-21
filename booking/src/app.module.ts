@@ -6,6 +6,7 @@ import { CommonModule } from '@charmbooking/common';
 import { SalonServiceModule } from './salon_service/salon_service.module';
 import { SalonCategoryModule } from './salon_category/salon_category.module';
 import { SalonWorkerModule } from './salon_worker/salon_worker.module';
+import { BookingModule } from './booking/booking.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { SalonWorkerModule } from './salon_worker/salon_worker.module';
     SalonServiceModule,
     SalonCategoryModule,
     SalonWorkerModule,
+    BookingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

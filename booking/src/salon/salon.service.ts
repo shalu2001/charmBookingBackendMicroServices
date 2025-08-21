@@ -1,7 +1,13 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { getConfig, Salon, SalonAdmin, SalonImage } from '@charmbooking/common';
+import {
+  getConfig,
+  Salon,
+  SalonAdmin,
+  SalonImage,
+  UserRole,
+} from '@charmbooking/common';
 import { SalonRegisterDTO, SalonResponseDTO } from 'src/dto/salonResponse';
 import { GenericError } from '@charmbooking/common';
 import * as bcrypt from 'bcrypt';
@@ -86,6 +92,7 @@ export class SalonService {
     return savedSalon;
   }
 
+  // TODO: Move to a separate service for salon admin
   async salonLogin(email: string, password: string): Promise<any> {
     const salon = await this.salonAdminRepository.findOne({
       where: { email },
@@ -109,6 +116,7 @@ export class SalonService {
       id: salon?.salonId,
       adminId: salon?.adminId,
       email: salon?.email,
+      role: UserRole.SalonAdmin,
     });
     const { password: _, ...salonWithoutPassword } = salon;
     return { token, salon: salonWithoutPassword };

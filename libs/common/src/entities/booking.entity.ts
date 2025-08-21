@@ -15,20 +15,20 @@ import { SalonWorker } from './salon_worker.entity';
 
 @Entity('bookings')
 export class Booking {
-  @PrimaryGeneratedColumn()
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column()
-  user_id: number;
+  user_id: string;
 
   @Column()
-  salon_id: number;
+  salon_id: string;
 
   @Column()
-  salon_service_id: number;
+  salon_service_id: string;
 
-  @Column()
-  payment_id: number;
+  @Column({ nullable: true })
+  payment_id?: number;
 
   @Column({ nullable: true })
   worker_id: string;
@@ -64,9 +64,10 @@ export class Booking {
 
   @ManyToOne(() => PaymentDetails, (payment) => payment.id, {
     onDelete: 'RESTRICT',
+    nullable: true,
   })
   @JoinColumn({ name: 'payment_id' })
-  payment: PaymentDetails;
+  payment?: PaymentDetails;
 
   @ManyToOne(() => SalonWorker, (worker) => worker.workerId, {
     onDelete: 'SET NULL',

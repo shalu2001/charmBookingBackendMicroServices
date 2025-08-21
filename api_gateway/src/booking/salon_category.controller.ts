@@ -9,13 +9,13 @@ import {
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { SalonAdminGuard } from 'src/auth/auth.guard';
 
 @Controller('salonCategory')
 export class SalonCategoryController {
   constructor(@Inject('BOOKING_SERVICE') private client: ClientProxy) {}
 
-  @UseGuards(AuthGuard)
+  @UseGuards(SalonAdminGuard)
   @Post('createCategory')
   async create(@Body() createSalonCategoryDto: any): Promise<any> {
     const pattern = { cmd: 'create_salon_category' };
