@@ -3,10 +3,11 @@ import {
   BookingRequestDTO,
   BookingSlot,
   BookingStatus,
+  GenericError,
   SalonService,
   SalonWorker,
 } from '@charmbooking/common';
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, In } from 'typeorm';
 
@@ -20,6 +21,19 @@ export class BookingService {
     @InjectRepository(SalonService)
     private readonly serviceRepository: Repository<SalonService>,
   ) {}
+
+  async findById(id: string): Promise<Booking | null> {
+    return this.bookingRepository.findOne({ where: { id } });
+  }
+
+  async update(id: string, updateData: Partial<Booking>): Promise<Booking> {
+    await this.bookingRepository.update(id, updateData);
+    const booking = await this.bookingRepository.findOne({ where: { id } });
+    if (!booking) {
+      throw new GenericError('Booking not found', HttpStatus.NOT_FOUND);
+    }
+    return booking;
+  }
 
   /**
    * Checks availability for a given salon service, date, and time range.

@@ -1,15 +1,15 @@
 import { PaymentStatus } from '../enums/paymentStatus';
 import {
   Entity,
-  PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
+  PrimaryGeneratedColumn,
 } from 'typeorm';
 
 @Entity()
 export class PaymentDetails {
   @PrimaryGeneratedColumn()
-  id: number;
+  id: string;
 
   @Column({ type: 'varchar' })
   payment_method: string;

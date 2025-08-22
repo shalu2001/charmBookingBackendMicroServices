@@ -27,8 +27,11 @@ export class Booking {
   @Column()
   salon_service_id: string;
 
+  @Column()
+  amount: number;
+
   @Column({ nullable: true })
-  payment_id?: number;
+  payment_id?: string;
 
   @Column({ nullable: true })
   worker_id: string;

@@ -39,10 +39,18 @@ type JwtConfig = {
   expiration: string | undefined;
 };
 
+type PayHereConfig = {
+  merchantId: string | undefined;
+  merchantSecret: string | undefined;
+  frontendUrl: string | undefined;
+  backendUrl: string | undefined;
+};
+
 type AppConfig = {
   database: DatabaseConfig;
   services: ServiceConfig;
   jwt: JwtConfig;
+  payHere: PayHereConfig;
 };
 
 export const getConfig = (): AppConfig => ({
@@ -66,5 +74,11 @@ export const getConfig = (): AppConfig => ({
   jwt: {
     secret: process.env.JWT_SECRET,
     expiration: process.env.JWT_EXPIRATION,
+  },
+  payHere: {
+    merchantId: process.env.PH_MERCHANT_ID,
+    merchantSecret: process.env.PH_MERCHANT_SECRET,
+    frontendUrl: process.env.FRONTEND_URL,
+    backendUrl: process.env.BACKEND_URL,
   },
 });
