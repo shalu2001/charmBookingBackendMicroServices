@@ -1,6 +1,7 @@
 // payments.controller.ts
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { PayHereService } from './payment.service';
+import { PayHereNotifyDTO } from 'src/dto/paymentDto';
 
 @Controller('payments')
 export class PaymentsController {
@@ -26,10 +27,8 @@ export class PaymentsController {
 
   @Post('notify')
   @HttpCode(HttpStatus.OK)
-  async handleNotification(@Body() body: any) {
-    // Delegate to service for verification and update
+  async handleNotification(@Body() body: PayHereNotifyDTO) {
     await this.payHereService.handlePaymentNotification(body);
-    // PayHere expects a 200 OK response
     return { status: 'received' };
   }
 }

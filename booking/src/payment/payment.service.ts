@@ -10,6 +10,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import * as crypto from 'crypto';
 import { BookingService } from 'src/booking/booking.service';
+import { PayHereNotifyDTO } from 'src/dto/paymentDto';
 import { Repository } from 'typeorm';
 
 const config = getConfig();
@@ -95,16 +96,7 @@ export class PayHereService {
     };
   }
 
-  async handlePaymentNotification(body: {
-    merchant_id: string;
-    order_id: string;
-    payment_id: string;
-    payhere_amount: string;
-    payhere_currency: string;
-    status_code: string;
-    md5sig: string;
-    method: string;
-  }) {
+  async handlePaymentNotification(body: PayHereNotifyDTO) {
     // Extract POST params
     const {
       merchant_id,
@@ -169,6 +161,7 @@ export class PayHereService {
     await this.bookingService.update(booking.id, booking);
 
     const paymentDetails: Partial<PaymentDetails> = {
+      id: payment_id,
       transaction_reference: payment_id,
       amount: Number(payhere_amount),
       status: paymentStatus,
