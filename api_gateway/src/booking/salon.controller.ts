@@ -5,7 +5,6 @@ import {
   Inject,
   Param,
   Post,
-  UploadedFile,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
@@ -53,5 +52,12 @@ export class SalonController {
   async findAllSalonCategories(): Promise<any> {
     const pattern = { cmd: 'findAllSalonCategories' };
     return firstValueFrom(this.client.send<any>(pattern, {}));
+  }
+
+  @Get('getSalonProfile/:id')
+  async getSalonProfile(@Param('id') id: number): Promise<any> {
+    console.log('Fetching salon profile for ID:', id);
+    const pattern = { cmd: 'get_salon_profile' };
+    return firstValueFrom(this.client.send<any>(pattern, id));
   }
 }

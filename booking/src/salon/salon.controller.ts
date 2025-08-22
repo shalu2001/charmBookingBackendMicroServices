@@ -44,4 +44,10 @@ export class SalonController {
     const salon = await this.salonService.findById(id);
     return salon;
   }
+
+  @MessagePattern({ cmd: 'get_salon_profile' })
+  async getSalonProfile(id: string): Promise<any> {
+    const salon = await this.salonService.findSalonProfileById(id);
+    return salon;
+  }
 }

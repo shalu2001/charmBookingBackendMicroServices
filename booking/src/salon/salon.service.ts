@@ -149,4 +149,14 @@ export class SalonService {
       reviews,
     } as SalonResponseDTO;
   }
+
+  async findSalonProfileById(id: string): Promise<any> {
+    const salon = await this.salonRepository.findOne({
+      where: { id },
+    });
+    //fetch salon payment details
+    if (!salon) {
+      throw new GenericError('Salon not found', HttpStatus.NOT_FOUND);
+    }
+  }
 }

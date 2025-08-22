@@ -34,26 +34,17 @@ export class BookingService {
     const service = await this.serviceRepository.findOne({
       where: { serviceId: salonServiceId },
     });
-    console.log('service--------------', service);
 
-    console.log('startTime--------------', startTime);
     // Calculate endTime using startTime, service duration, and buffer (assume buffer is in minutes)
     const buffer = service?.bufferTime ?? 0; // fallback to 0 if buffer is undefined
-    console.log('buffer--------------', buffer);
     const [startHour, startMinute] = startTime.split(':').map(Number);
-    console.log('startHour--------------', startHour);
-    console.log('startMinute--------------', startMinute);
     const totalMinutes =
       startHour * 60 + startMinute + (service?.duration ?? 0) + buffer;
-    console.log('totalMinutes--------------', totalMinutes);
     const endHour = Math.floor(totalMinutes / 60);
-    console.log('endHour--------------', endHour);
     const endMinute = totalMinutes % 60;
-    console.log('endMinute--------------', endMinute);
     const endTime = `${endHour.toString().padStart(2, '0')}:${endMinute
       .toString()
       .padStart(2, '0')}`;
-    console.log('endTime--------------', endTime);
 
     const workers = await this.workerRepository
       .createQueryBuilder('worker')
@@ -71,7 +62,6 @@ export class BookingService {
       })
       .andWhere('leave.id IS NULL') // Exclude workers who have leave in the range
       .getMany();
-    console.log('workers--------------', workers);
 
     const bookings = await this.bookingRepository.find({
       where: {
@@ -82,7 +72,6 @@ export class BookingService {
         status: In([BookingStatus.PENDING, BookingStatus.CONFIRMED]),
       },
     });
-    console.log('bookings--------------', bookings);
     const bookedWorkerIds = new Set(bookings.map((b) => b.worker_id));
 
     const availableSlots: BookingSlot[] = workers
