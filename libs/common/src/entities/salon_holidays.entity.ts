@@ -16,7 +16,7 @@ export class SalonHoliday {
   id: number;
 
   @Column()
-  salonId: number;
+  salonId: string;
 
   @ManyToOne(() => Salon, (salon) => salon.id, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'salonId' })

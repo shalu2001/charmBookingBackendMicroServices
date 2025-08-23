@@ -2,6 +2,7 @@ import {
   BookingRequestDTO,
   BookingSlot,
   CheckServiceTimeAvailabilityDto,
+  GetAvailableSlotsRequestDto,
 } from '@charmbooking/common';
 import {
   Body,
@@ -32,6 +33,21 @@ export class BookingController {
       serviceId,
       date,
       startTime,
+    };
+    return firstValueFrom(this.client.send<BookingSlot[]>(pattern, request));
+  }
+
+  @Get(':salonId/getAvailableSlots')
+  async getAvailableSlots(
+    @Param('salonId') salonId: string,
+    @Query('serviceId') serviceId: string,
+    @Query('date') date: string,
+  ): Promise<BookingSlot[]> {
+    const pattern = { cmd: 'get_available_slots' };
+    const request: GetAvailableSlotsRequestDto = {
+      salonId,
+      serviceId,
+      date,
     };
     return firstValueFrom(this.client.send<BookingSlot[]>(pattern, request));
   }

@@ -12,7 +12,7 @@ export class SalonWeeklyHours {
   id: number;
 
   @Column()
-  salon_id: number;
+  salon_id: string;
 
   @Column({
     type: 'enum',

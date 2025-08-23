@@ -1,10 +1,4 @@
-import {
-  Entity,
-  Column,
-  Timestamp,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Entity, Column, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { SalonWorker } from './salon_worker.entity';
 
 //TODO: FIX this entity
@@ -14,18 +8,18 @@ export class SalonWorkerLeave {
   id: number;
 
   @Column()
-  workerId: number;
+  workerId: string;
   @ManyToOne(() => SalonWorker, (worker) => worker.workerId, {
     onDelete: 'CASCADE',
   })
   worker: SalonWorker;
 
   @Column({ type: 'date' })
-  date: Date;
+  date: string;
 
   @Column({ type: 'time' })
-  startTime: Date;
+  startTime: string;
 
   @Column({ type: 'time' })
-  endTime: Date;
+  endTime: string;
 }

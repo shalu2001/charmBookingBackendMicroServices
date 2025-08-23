@@ -5,6 +5,20 @@ export interface CheckServiceTimeAvailabilityDto {
   startTime: string;
 }
 
+export interface GetAvailableSlotsRequestDto {
+  salonId: string;
+  serviceId: string;
+  date: string;
+}
+
+export interface GetAvailableSlotsResponseDto {
+  salonId: string;
+  serviceId: string;
+  date: string;
+  isHoliday: boolean;
+  times: string[];
+}
+
 export interface BookingSlot {
   serviceId: string;
   date: string;

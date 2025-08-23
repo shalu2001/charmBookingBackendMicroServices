@@ -4,6 +4,7 @@ import { BookingService } from './booking.service';
 import {
   BookingRequestDTO,
   CheckServiceTimeAvailabilityDto,
+  GetAvailableSlotsRequestDto,
 } from '@charmbooking/common';
 
 @Controller('booking')
@@ -13,7 +14,6 @@ export class BookingController {
   async checkServiceTimeAvailability(
     data: CheckServiceTimeAvailabilityDto,
   ): Promise<any> {
-    console.log(data);
     const { salonId, serviceId, date, startTime } = data;
     return this.bookingService.checkServiceTimeAvailability(
       salonId,
@@ -21,6 +21,12 @@ export class BookingController {
       date,
       startTime,
     );
+  }
+
+  @MessagePattern({ cmd: 'get_available_slots' })
+  async getAvailableSlots(data: GetAvailableSlotsRequestDto): Promise<any> {
+    const { salonId, serviceId, date } = data;
+    return this.bookingService.getAvailableSlots(salonId, serviceId, date);
   }
 
   @MessagePattern({ cmd: 'book_slot' })

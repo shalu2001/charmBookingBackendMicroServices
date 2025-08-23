@@ -3,13 +3,21 @@ import {
   BookingRequestDTO,
   BookingSlot,
   BookingStatus,
+  DayOfWeek,
   GenericError,
+  GetAvailableSlotsResponseDto,
+  SalonHoliday,
   SalonService,
+  SalonWeeklyHours,
   SalonWorker,
+  SalonWorkerLeave,
+  TimeString,
 } from '@charmbooking/common';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, In } from 'typeorm';
+
+type Event = { t: TimeString; delta: number };
 
 @Injectable()
 export class BookingService {
@@ -18,8 +26,14 @@ export class BookingService {
     private readonly bookingRepository: Repository<Booking>,
     @InjectRepository(SalonWorker)
     private readonly workerRepository: Repository<SalonWorker>,
+    @InjectRepository(SalonWorkerLeave)
+    private readonly workerLeaveRepository: Repository<SalonWorkerLeave>,
     @InjectRepository(SalonService)
     private readonly serviceRepository: Repository<SalonService>,
+    @InjectRepository(SalonWeeklyHours)
+    private readonly weeklyHoursRepository: Repository<SalonWeeklyHours>,
+    @InjectRepository(SalonHoliday)
+    private readonly holidayRepository: Repository<SalonHoliday>,
   ) {}
 
   async findById(id: string): Promise<Booking | null> {
@@ -104,6 +118,182 @@ export class BookingService {
     return availableSlots;
   }
 
+  async getAvailableSlots(
+    salonId: string,
+    serviceId: string,
+    date: string,
+  ): Promise<GetAvailableSlotsResponseDto> {
+    const isHoliday = await this.holidayRepository.findOne({
+      where: { salonId, date },
+    });
+    if (isHoliday) {
+      return {
+        salonId,
+        serviceId,
+        date,
+        isHoliday: true,
+        times: [],
+      };
+    }
+
+    const service = await this.serviceRepository.findOne({
+      where: { serviceId },
+    });
+
+    if (!service) {
+      throw new GenericError('Service not found', HttpStatus.NOT_FOUND);
+    }
+
+    const serviceWorkers = service.workers;
+    const workerIds = serviceWorkers.map((w) => w.workerId);
+    const salon = service.salon;
+
+    if (serviceWorkers.length === 0) {
+      throw new GenericError(
+        'No workers available for this service',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    const weeklyHours = await this.weeklyHoursRepository.findOne({
+      where: { salon_id: salon.id, day_of_week: this.getDayOfWeek(date) },
+    });
+
+    const salonOpenTime = weeklyHours?.open_time;
+    const salonCloseTime = weeklyHours?.close_time;
+
+    if (!salonOpenTime || !salonCloseTime) {
+      throw new GenericError('Salon hours not found', HttpStatus.BAD_REQUEST);
+    }
+
+    const bookings = await this.bookingRepository.find({
+      where: {
+        worker_id: In(workerIds),
+        booking_date: date,
+        status: In([BookingStatus.PENDING, BookingStatus.CONFIRMED]),
+      },
+      relations: ['salonService'],
+    });
+
+    const workerLeaves = await this.workerLeaveRepository.find({
+      where: {
+        workerId: In(workerIds),
+        date,
+      },
+    });
+
+    const workerUnavailability: Record<
+      string,
+      Array<{ start: TimeString; end: TimeString }>
+    > = {};
+
+    workerIds.forEach((workerId) => {
+      workerUnavailability[workerId] = [];
+    });
+
+    bookings.forEach((booking) => {
+      if (!booking.worker_id) return;
+
+      const bookingService = booking.salonService;
+      if (!bookingService) return;
+
+      const startTime = new TimeString(booking.start_time);
+      const endTime = startTime.add(
+        0,
+        bookingService.duration + bookingService.bufferTime,
+      );
+
+      workerUnavailability[booking.worker_id].push({
+        start: startTime,
+        end: endTime,
+      });
+    });
+
+    workerLeaves.forEach((leave) => {
+      const workerId = leave.workerId;
+      if (!workerUnavailability[workerId]) return;
+
+      workerUnavailability[workerId].push({
+        start: new TimeString(leave.startTime),
+        end: new TimeString(leave.endTime),
+      });
+    });
+
+    const events: Event[] = [];
+
+    Object.values(workerUnavailability).forEach((ranges) => {
+      ranges.forEach((r) => {
+        events.push({ t: r.start, delta: 1 });
+        events.push({ t: r.end, delta: -1 });
+      });
+    });
+
+    // sort by time; if same time prefer start (+1) before end (-1) so zero-length overlaps count correctly
+    events.sort((a, b) => {
+      const diff = a.t.toSeconds() - b.t.toSeconds();
+      if (diff !== 0) return diff;
+      return b.delta - a.delta; // start (+1) before end (-1)
+    });
+
+    const serviceBusyRanges: Array<{ start: TimeString; end: TimeString }> = [];
+    let active = 0;
+    let busyStart: TimeString | null = null;
+    const workerCount = workerIds.length;
+
+    for (const ev of events) {
+      const prevActive = active;
+      active += ev.delta;
+
+      // we just entered "all workers busy"
+      if (prevActive < workerCount && active === workerCount) {
+        busyStart = ev.t;
+      }
+
+      // we just left "all workers busy"
+      if (prevActive === workerCount && active < workerCount && busyStart) {
+        // push range [busyStart, ev.t)
+        serviceBusyRanges.push({ start: busyStart, end: ev.t });
+        busyStart = null;
+      }
+    }
+
+    let currentTime = new TimeString(salonOpenTime);
+    const closeTime = new TimeString(salonCloseTime);
+    const times: string[] = [];
+
+    const serviceDuration = service.duration + (service.bufferTime || 0);
+
+    while (currentTime.isBefore(closeTime)) {
+      const slotEndTime = currentTime.add(0, serviceDuration);
+
+      // Ensure the slot fits within salon hours
+      if (slotEndTime.isAfter(closeTime)) {
+        break;
+      }
+
+      // Check if this slot overlaps with any busy range
+      const overlaps = serviceBusyRanges.some(
+        (range) =>
+          // slot starts before busy ends AND slot ends after busy starts
+          currentTime.isBefore(range.end) && slotEndTime.isAfter(range.start),
+      );
+
+      if (!overlaps) {
+        times.push(currentTime.toString());
+      }
+
+      currentTime = currentTime.add(0, 15); // Check every 15 minutes
+    }
+
+    return {
+      salonId,
+      serviceId,
+      date,
+      isHoliday: false,
+      times,
+    };
+  }
+
   async createBooking(data: BookingRequestDTO): Promise<any> {
     const booking: Partial<Booking> = {
       salon_id: data.salonId,
@@ -115,5 +305,19 @@ export class BookingService {
       status: BookingStatus.PENDING,
     };
     return this.bookingRepository.save(booking);
+  }
+
+  private getDayOfWeek(date: string): DayOfWeek {
+    const days: DayOfWeek[] = [
+      DayOfWeek.Sunday,
+      DayOfWeek.Monday,
+      DayOfWeek.Tuesday,
+      DayOfWeek.Wednesday,
+      DayOfWeek.Thursday,
+      DayOfWeek.Friday,
+      DayOfWeek.Saturday,
+    ];
+    const day = new Date(date).getUTCDay();
+    return days[day];
   }
 }

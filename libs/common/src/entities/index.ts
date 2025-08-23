@@ -6,7 +6,6 @@ export * from './user.entity';
 export * from './salon_images.entity';
 export * from './salon_holidays.entity';
 export * from './salon_weekly_hours.entity';
-export * from './salon_service_hours.entity';
 export * from './booking.entity';
 export * from './payment_details.entity';
 export * from './salon_worker.entity';
