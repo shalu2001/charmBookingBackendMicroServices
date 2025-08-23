@@ -1,4 +1,5 @@
 import {
+  Booking,
   BookingStatus,
   GenericError,
   getConfig,
@@ -181,10 +182,48 @@ export class PayHereService {
   }
 
   async refundBooking(bookingId: string, reason?: string) {
-    const booking = await this.bookingService.findById(bookingId);
-    if (!booking || !booking.payment_id)
-      throw new GenericError('Booking not found', HttpStatus.NOT_FOUND);
+    const booking = await this.validateBookingForRefund(bookingId);
+    const accessToken = await this.getPayHereAccessToken();
+    return await this.processRefund(booking, accessToken, reason);
+  }
 
+  private async validateBookingForRefund(bookingId: string) {
+    const booking = await this.bookingService.findById(bookingId);
+
+    if (!booking || !booking.payment_id) {
+      throw new GenericError('Booking not found', HttpStatus.NOT_FOUND);
+    }
+
+    return booking;
+  }
+
+  private async getPayHereAccessToken(): Promise<string> {
+    const { appId, appSecret } = this.validatePaymentConfiguration();
+    const oauthURL = 'https://sandbox.payhere.lk/merchant/v1/oauth/token';
+
+    try {
+      const response = await lastValueFrom(
+        this.httpService.post<PayHereOAuthResponse>(
+          oauthURL,
+          { grantType: 'client_credentials' },
+          {
+            headers: {
+              Authorization: `Basic ${Buffer.from(`${appId}:${appSecret}`).toString('base64')}`,
+            },
+          },
+        ),
+      );
+
+      return response.data.access_token;
+    } catch {
+      throw new GenericError(
+        'Failed to obtain access token',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  private validatePaymentConfiguration() {
     const appId = config.payHere.appId;
     const appSecret = config.payHere.appSecret;
 
@@ -195,79 +234,73 @@ export class PayHereService {
       );
     }
 
-    const oauthURL = 'https://sandbox.payhere.lk/merchant/v1/oauth/token';
+    return { appId, appSecret };
+  }
+
+  private async processRefund(
+    booking: Booking,
+    accessToken: string,
+    reason?: string,
+  ) {
+    const refundURL = 'https://sandbox.payhere.lk/merchant/v1/payment/refund';
+
     try {
-      const response = await lastValueFrom(
-        this.httpService.post<PayHereOAuthResponse>(
-          oauthURL,
+      const refundResponse = await lastValueFrom(
+        this.httpService.post<PayHereRefundResponse>(
+          refundURL,
           {
-            grantType: 'client_credentials',
+            paymentId: booking.payment_id,
+            reason,
           },
           {
             headers: {
-              Authorization: `Basic ${Buffer.from(`${appId}:${appSecret}`).toString('base64')}`,
+              Authorization: `Bearer ${accessToken}`,
             },
           },
         ),
       );
 
-      if (response.status !== 200) {
-        throw new GenericError(
-          'Failed to obtain access token',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
-
-      const access_token = response.data.access_token;
-
-      const refundURL = `https://sandbox.payhere.lk/merchant/v1/payment/refund`;
-      try {
-        const refundResponse = await lastValueFrom(
-          this.httpService.post<PayHereRefundResponse>(
-            refundURL,
-            {
-              paymentId: booking.payment_id,
-              reason,
-            },
-            {
-              headers: {
-                Authorization: `Bearer ${access_token}`,
-              },
-            },
-          ),
-        );
-
-        switch (refundResponse.data.status) {
-          case 1:
-            // Refund successful
-            booking.status = BookingStatus.CANCELLED;
-            await this.bookingService.update(booking.id, booking);
-            await this.paymentDetailsRepository.update(booking.payment_id, {
-              status: PaymentStatus.REFUNDED,
-            });
-            return { status: 'success' };
-          case 0:
-            throw new GenericError(
-              'Error initiating refund',
-              HttpStatus.INTERNAL_SERVER_ERROR,
-            );
-          case -1:
-            throw new GenericError(
-              `Refund Failed: ${refundResponse.data.msg}`,
-              HttpStatus.INTERNAL_SERVER_ERROR,
-            );
-        }
-      } catch {
-        throw new GenericError(
-          'Failed to process refund',
-          HttpStatus.INTERNAL_SERVER_ERROR,
-        );
-      }
+      return this.handleRefundResponse(refundResponse.data, booking);
     } catch {
       throw new GenericError(
-        'Failed to obtain access token',
+        'Failed to process refund',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
+
+  private async handleRefundResponse(
+    refundData: PayHereRefundResponse,
+    booking: Booking,
+  ) {
+    switch (refundData.status) {
+      case 1:
+        // Refund successful
+        await this.updateBookingAfterRefund(booking);
+        return { status: 'success' };
+      case 0:
+        throw new GenericError(
+          'Error initiating refund',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      case -1:
+        throw new GenericError(
+          `Refund Failed: ${refundData.msg}`,
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+      default:
+        throw new GenericError(
+          'Unknown refund status',
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        );
+    }
+  }
+
+  private async updateBookingAfterRefund(booking: Booking) {
+    booking.status = BookingStatus.CANCELLED;
+    await this.bookingService.update(booking.id, booking);
+    await this.paymentDetailsRepository.update(booking.payment_id!, {
+      status: PaymentStatus.REFUNDED,
+    });
   }
 }

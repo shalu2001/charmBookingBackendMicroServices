@@ -1,4 +1,3 @@
-// payments.controller.ts
 import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
 import { PayHereService } from './payment.service';
 import { PayHereNotifyDTO } from 'src/dto/paymentDto';
