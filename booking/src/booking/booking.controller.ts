@@ -1,16 +1,21 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { BookingService } from './booking.service';
-import { BookingRequestDTO, GetAvailableSlotsDto } from '@charmbooking/common';
+import {
+  BookingRequestDTO,
+  CheckServiceTimeAvailabilityDto,
+} from '@charmbooking/common';
 
 @Controller('booking')
 export class BookingController {
   constructor(private readonly bookingService: BookingService) {}
-  @MessagePattern({ cmd: 'get_available_slots' })
-  async getAvailableSlots(data: GetAvailableSlotsDto): Promise<any> {
+  @MessagePattern({ cmd: 'check_service_time_availability' })
+  async checkServiceTimeAvailability(
+    data: CheckServiceTimeAvailabilityDto,
+  ): Promise<any> {
     console.log(data);
     const { salonId, serviceId, date, startTime } = data;
-    return this.bookingService.getAvailableSlots(
+    return this.bookingService.checkServiceTimeAvailability(
       salonId,
       serviceId,
       date,

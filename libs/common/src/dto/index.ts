@@ -1,4 +1,4 @@
-export interface GetAvailableSlotsDto {
+export interface CheckServiceTimeAvailabilityDto {
   salonId: string;
   serviceId: string;
   date: string;

@@ -39,7 +39,7 @@ export class BookingService {
    * Checks availability for a given salon service, date, and time range.
    * Returns true if the slot is available, false otherwise.
    */
-  async getAvailableSlots(
+  async checkServiceTimeAvailability(
     salonId: string,
     salonServiceId: string,
     bookingDate: string,

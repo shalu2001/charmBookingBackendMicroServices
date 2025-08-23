@@ -1,7 +1,7 @@
 import {
   BookingRequestDTO,
   BookingSlot,
-  GetAvailableSlotsDto,
+  CheckServiceTimeAvailabilityDto,
 } from '@charmbooking/common';
 import {
   Body,
@@ -19,15 +19,15 @@ import { firstValueFrom } from 'rxjs';
 export class BookingController {
   constructor(@Inject('BOOKING_SERVICE') private client: ClientProxy) {}
 
-  @Get(':salonId/getAvailableSlots')
-  async getAvailableSlots(
+  @Get(':salonId/checkServiceTimeAvailability')
+  async checkServiceTimeAvailability(
     @Param('salonId') salonId: string,
     @Query('serviceId') serviceId: string,
     @Query('date') date: string,
     @Query('startTime') startTime: string,
   ): Promise<BookingSlot[]> {
-    const pattern = { cmd: 'get_available_slots' };
-    const request: GetAvailableSlotsDto = {
+    const pattern = { cmd: 'check_service_time_availability' };
+    const request: CheckServiceTimeAvailabilityDto = {
       salonId,
       serviceId,
       date,
