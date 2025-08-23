@@ -42,6 +42,8 @@ type JwtConfig = {
 type PayHereConfig = {
   merchantId: string | undefined;
   merchantSecret: string | undefined;
+  appId: string | undefined;
+  appSecret: string | undefined;
   frontendUrl: string | undefined;
   backendUrl: string | undefined;
 };
@@ -78,6 +80,8 @@ export const getConfig = (): AppConfig => ({
   payHere: {
     merchantId: process.env.PH_MERCHANT_ID,
     merchantSecret: process.env.PH_MERCHANT_SECRET,
+    appId: process.env.PH_APP_ID,
+    appSecret: process.env.PH_APP_SECRET,
     frontendUrl: process.env.FRONTEND_URL,
     backendUrl: process.env.BACKEND_URL,
   },

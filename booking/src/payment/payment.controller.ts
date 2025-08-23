@@ -31,4 +31,10 @@ export class PaymentsController {
     await this.payHereService.handlePaymentNotification(body);
     return { status: 'received' };
   }
+
+  @Post('refund')
+  @HttpCode(HttpStatus.OK)
+  async refundBooking(@Body() body: { paymentId: string; reason: string }) {
+    return this.payHereService.refundBooking(body.paymentId, body.reason);
+  }
 }
