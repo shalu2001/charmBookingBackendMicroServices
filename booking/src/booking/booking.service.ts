@@ -1,8 +1,9 @@
 import {
   Booking,
-  BookingRequestDTO,
+  BookingRequestDto,
   BookingSlot,
   BookingStatus,
+  CheckServiceTimeAvailabilityResponseDto,
   DayOfWeek,
   GenericError,
   GetAvailableSlotsResponseDto,
@@ -58,21 +59,20 @@ export class BookingService {
     salonServiceId: string,
     bookingDate: string,
     startTime: string,
-  ): Promise<BookingSlot[]> {
+  ): Promise<CheckServiceTimeAvailabilityResponseDto> {
     const service = await this.serviceRepository.findOne({
       where: { serviceId: salonServiceId },
     });
 
-    // Calculate endTime using startTime, service duration, and buffer (assume buffer is in minutes)
-    const buffer = service?.bufferTime ?? 0; // fallback to 0 if buffer is undefined
-    const [startHour, startMinute] = startTime.split(':').map(Number);
-    const totalMinutes =
-      startHour * 60 + startMinute + (service?.duration ?? 0) + buffer;
-    const endHour = Math.floor(totalMinutes / 60);
-    const endMinute = totalMinutes % 60;
-    const endTime = `${endHour.toString().padStart(2, '0')}:${endMinute
-      .toString()
-      .padStart(2, '0')}`;
+    if (!service) {
+      throw new GenericError('Service not found', HttpStatus.NOT_FOUND);
+    }
+
+    // Calculate endTime using TimeString, service duration, and buffer
+    const buffer = service.bufferTime ?? 0;
+    const endTime = new TimeString(startTime)
+      .add(0, (service.duration ?? 0) + buffer)
+      .toString();
 
     const workers = await this.workerRepository
       .createQueryBuilder('worker')
@@ -88,7 +88,7 @@ export class BookingService {
       .andWhere('service.serviceId = :salonServiceId', {
         salonServiceId: salonServiceId.toString(),
       })
-      .andWhere('leave.id IS NULL') // Exclude workers who have leave in the range
+      .andWhere('leave.id IS NULL')
       .getMany();
 
     const bookings = await this.bookingRepository.find({
@@ -115,7 +115,88 @@ export class BookingService {
         workerId: worker.workerId,
       }));
 
-    return availableSlots;
+    let nextAvailableSlot: BookingSlot | undefined = undefined;
+
+    if (availableSlots.length === 0) {
+      // Try to find the next available slot on the same day, checking every 15 minutes until closing
+      // Get salon's open/close time for the day
+      const weeklyHours = await this.weeklyHoursRepository.findOne({
+        where: {
+          salon_id: service.salon.id,
+          day_of_week: this.getDayOfWeek(bookingDate),
+        },
+      });
+
+      if (weeklyHours) {
+        const salonCloseTime = weeklyHours.close_time;
+        const serviceDuration = service.duration + (service.bufferTime || 0);
+
+        let current = new TimeString(startTime).add(0, 15);
+        const close = new TimeString(salonCloseTime);
+
+        while (current.isBefore(close)) {
+          const slotEnd = current.add(0, serviceDuration);
+          if (slotEnd.isAfter(close)) break;
+
+          // Find available workers for this slot
+          const slotBookings = await this.bookingRepository.find({
+            where: {
+              salon_id: salonId,
+              salon_service_id: salonServiceId,
+              booking_date: bookingDate,
+              start_time: Between(current.toString(), slotEnd.toString()),
+              status: In([BookingStatus.PENDING, BookingStatus.CONFIRMED]),
+            },
+          });
+          const slotBookedWorkerIds = new Set(
+            slotBookings.map((b) => b.worker_id),
+          );
+
+          const slotWorkers = await this.workerRepository
+            .createQueryBuilder('worker')
+            .leftJoinAndSelect('worker.services', 'service')
+            .leftJoinAndSelect('worker.salon', 'salon')
+            .leftJoin(
+              'worker.leaves',
+              'leave',
+              'leave.date = :bookingDate AND ((leave.startTime < :slotEnd AND leave.endTime > :slotStart))',
+              {
+                bookingDate,
+                slotStart: current.toString(),
+                slotEnd: slotEnd.toString(),
+              },
+            )
+            .where('salon.id = :salonId', { salonId: salonId.toString() })
+            .andWhere('service.serviceId = :salonServiceId', {
+              salonServiceId: salonServiceId.toString(),
+            })
+            .andWhere('leave.id IS NULL')
+            .getMany();
+
+          const slotAvailableWorker = slotWorkers.find(
+            (worker) => !slotBookedWorkerIds.has(worker.workerId),
+          );
+
+          if (slotAvailableWorker) {
+            nextAvailableSlot = {
+              serviceId: salonServiceId,
+              date: bookingDate,
+              startTime: current.toString(),
+              duration: service.duration,
+              workerId: slotAvailableWorker.workerId,
+            };
+            break;
+          }
+
+          current = current.add(0, 15);
+        }
+      }
+    }
+
+    return {
+      slots: availableSlots,
+      nextAvailableSlot,
+    };
   }
 
   async getAvailableSlots(
@@ -294,7 +375,7 @@ export class BookingService {
     };
   }
 
-  async createBooking(data: BookingRequestDTO): Promise<any> {
+  async createBooking(data: BookingRequestDto): Promise<any> {
     const booking: Partial<Booking> = {
       salon_id: data.salonId,
       user_id: data.userId,

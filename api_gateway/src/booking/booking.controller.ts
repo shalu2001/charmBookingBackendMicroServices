@@ -1,5 +1,5 @@
 import {
-  BookingRequestDTO,
+  BookingRequestDto,
   BookingSlot,
   CheckServiceTimeAvailabilityDto,
   GetAvailableSlotsRequestDto,
@@ -53,7 +53,7 @@ export class BookingController {
   }
 
   @Post(':salonId/book')
-  async bookSlot(@Body() bookingData: BookingRequestDTO): Promise<any> {
+  async bookSlot(@Body() bookingData: BookingRequestDto): Promise<any> {
     const pattern = { cmd: 'book_slot' };
     return firstValueFrom(this.client.send(pattern, bookingData));
   }

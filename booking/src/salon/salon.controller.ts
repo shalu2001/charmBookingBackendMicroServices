@@ -2,6 +2,7 @@ import { Controller } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { SalonService } from './salon.service';
 import { SalonRegisterDTO } from 'src/dto/salonResponse';
+import { SalonRankedRequestDto, SalonWithRank } from '@charmbooking/common';
 
 @Controller('salon')
 export class SalonController {
@@ -10,6 +11,14 @@ export class SalonController {
   @MessagePattern({ cmd: 'get_salons' })
   async getSalons(): Promise<any> {
     const salons = await this.salonService.findAll();
+    return salons;
+  }
+
+  @MessagePattern({ cmd: 'get_salons_ranked' })
+  async getSalonsRanked(
+    request: SalonRankedRequestDto,
+  ): Promise<SalonWithRank[]> {
+    const salons = await this.salonService.findAllRanked(request);
     return salons;
   }
 

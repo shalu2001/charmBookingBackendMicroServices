@@ -2,8 +2,9 @@ import { Controller } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { BookingService } from './booking.service';
 import {
-  BookingRequestDTO,
+  BookingRequestDto,
   CheckServiceTimeAvailabilityDto,
+  CheckServiceTimeAvailabilityResponseDto,
   GetAvailableSlotsRequestDto,
 } from '@charmbooking/common';
 
@@ -13,7 +14,7 @@ export class BookingController {
   @MessagePattern({ cmd: 'check_service_time_availability' })
   async checkServiceTimeAvailability(
     data: CheckServiceTimeAvailabilityDto,
-  ): Promise<any> {
+  ): Promise<CheckServiceTimeAvailabilityResponseDto> {
     const { salonId, serviceId, date, startTime } = data;
     return this.bookingService.checkServiceTimeAvailability(
       salonId,
@@ -30,7 +31,7 @@ export class BookingController {
   }
 
   @MessagePattern({ cmd: 'book_slot' })
-  async bookSlot(data: BookingRequestDTO): Promise<any> {
+  async bookSlot(data: BookingRequestDto): Promise<any> {
     console.log(data);
     return this.bookingService.createBooking(data);
   }
