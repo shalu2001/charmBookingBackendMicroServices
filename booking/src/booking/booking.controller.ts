@@ -11,6 +11,7 @@ import {
 @Controller('booking')
 export class BookingController {
   constructor(private readonly bookingService: BookingService) {}
+
   @MessagePattern({ cmd: 'check_service_time_availability' })
   async checkServiceTimeAvailability(
     data: CheckServiceTimeAvailabilityDto,
@@ -35,5 +36,10 @@ export class BookingController {
   async bookSlot(data: BookingRequestDto): Promise<any> {
     console.log(data);
     return this.bookingService.createBooking(data);
+  }
+
+  @MessagePattern({ cmd: 'get_bookings' })
+  async getBookings(salonId: string): Promise<any> {
+    return this.bookingService.getBookings(salonId);
   }
 }
