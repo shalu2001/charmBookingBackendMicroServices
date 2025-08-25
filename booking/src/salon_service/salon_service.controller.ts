@@ -30,6 +30,7 @@ export class SalonServiceController {
 
   @MessagePattern({ cmd: 'updateSalonService' })
   update(@Payload() updateSalonServiceDto: UpdateSalonServiceDto) {
+    console.log('Updating salon service with data:', updateSalonServiceDto);
     return this.salonServiceService.update(
       updateSalonServiceDto.serviceId,
       updateSalonServiceDto,

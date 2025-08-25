@@ -315,5 +315,6 @@ export class SalonService {
     if (!salon) {
       throw new GenericError('Salon not found', HttpStatus.NOT_FOUND);
     }
+    return salon;
   }
 }

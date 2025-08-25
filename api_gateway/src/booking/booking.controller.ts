@@ -57,4 +57,10 @@ export class BookingController {
     const pattern = { cmd: 'book_slot' };
     return firstValueFrom(this.client.send(pattern, bookingData));
   }
+
+  @Get(':salonId/bookings')
+  async getBookings(@Param('salonId') salonId: string): Promise<any> {
+    const pattern = { cmd: 'get_bookings' };
+    return firstValueFrom(this.client.send(pattern, salonId));
+  }
 }

@@ -29,6 +29,7 @@ export interface BookingSlot {
   date: string;
   startTime: string;
   duration: number;
+  buffer: number;
   workerId: string;
 }
 

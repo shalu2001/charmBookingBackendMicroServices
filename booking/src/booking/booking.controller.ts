@@ -27,6 +27,7 @@ export class BookingController {
   @MessagePattern({ cmd: 'get_available_slots' })
   async getAvailableSlots(data: GetAvailableSlotsRequestDto): Promise<any> {
     const { salonId, serviceId, date } = data;
+    console.log(data);
     return this.bookingService.getAvailableSlots(salonId, serviceId, date);
   }
 

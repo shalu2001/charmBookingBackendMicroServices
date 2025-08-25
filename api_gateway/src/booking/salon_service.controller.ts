@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Inject, Param, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Inject,
+  Param,
+  Post,
+  Put,
+} from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 
@@ -8,6 +17,7 @@ export class SalonServiceController {
 
   @Post('create')
   async createSalonService(@Body() createSalonServiceDto: any): Promise<any> {
+    console.log('Creating salon service with data:', createSalonServiceDto);
     const pattern = { cmd: 'createSalonService' };
     return await firstValueFrom(
       this.client.send<any>(pattern, createSalonServiceDto),
@@ -34,7 +44,7 @@ export class SalonServiceController {
     return await firstValueFrom(this.client.send<any>(pattern, salonId));
   }
 
-  @Post('update')
+  @Put('update')
   async updateSalonService(@Body() updateSalonServiceDto: any): Promise<any> {
     const pattern = { cmd: 'updateSalonService' };
     return await firstValueFrom(
@@ -42,8 +52,9 @@ export class SalonServiceController {
     );
   }
 
-  @Post('remove/:id')
+  @Delete('remove/:id')
   async removeSalonService(@Param('id') id: string): Promise<any> {
+    console.log('Removing salon service with ID:', id);
     const pattern = { cmd: 'removeSalonService' };
     return await firstValueFrom(this.client.send<any>(pattern, id));
   }

@@ -7,6 +7,7 @@ import {
   Salon,
   SalonCategory,
   SalonService,
+  Booking,
 } from '@charmbooking/common';
 import { In, Repository } from 'typeorm';
 
@@ -19,6 +20,8 @@ export class SalonServiceService {
     private salonRepository: Repository<Salon>,
     @InjectRepository(SalonCategory)
     private salonCategoryRepository: Repository<SalonCategory>,
+    @InjectRepository(Booking)
+    private bookingRepository: Repository<Booking>,
   ) {}
 
   private async checkSalonExists(salonId: string): Promise<Salon> {
@@ -74,14 +77,89 @@ export class SalonServiceService {
     });
   }
 
-  update(serviceId: string, updateSalonServiceDto: UpdateSalonServiceDto) {
-    return this.salonServiceRepository.update(
-      { serviceId },
-      updateSalonServiceDto,
-    );
+  async update(
+    serviceId: string,
+    updateSalonServiceDto: UpdateSalonServiceDto,
+  ) {
+    // Find the existing service first
+    const existingService = await this.salonServiceRepository.findOne({
+      where: { serviceId },
+      relations: ['categories'],
+    });
+
+    if (!existingService) {
+      throw new GenericError(
+        `Service with ID ${serviceId} does not exist.`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    // If categoryIds are provided, update the categories
+    if (updateSalonServiceDto.categoryIds) {
+      const categories = await this.salonCategoryRepository.findBy({
+        categoryId: In(updateSalonServiceDto.categoryIds),
+      });
+
+      if (categories.length !== updateSalonServiceDto.categoryIds.length) {
+        throw new GenericError(
+          'One or more category IDs are invalid.',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      // Update the categories relation
+      existingService.categories = categories;
+    }
+
+    // Update other service properties
+    Object.assign(existingService, updateSalonServiceDto);
+
+    // Save the updated service with its relations
+    return this.salonServiceRepository.save(existingService);
   }
 
-  remove(serviceId: string) {
-    return this.salonServiceRepository.delete({ serviceId });
+  async remove(serviceId: string) {
+    // Find the service first to check if it exists
+    const service = await this.salonServiceRepository.findOne({
+      where: { serviceId },
+      relations: ['categories'],
+    });
+
+    if (!service) {
+      throw new GenericError(
+        `Service with ID ${serviceId} does not exist.`,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    // Check for existing bookings
+    const existingBookings = await this.bookingRepository.count({
+      where: { salon_service_id: serviceId },
+    });
+
+    if (existingBookings > 0) {
+      throw new GenericError(
+        `Cannot delete service with ID ${serviceId} as it has ${existingBookings} existing bookings.`,
+        HttpStatus.CONFLICT,
+      );
+    }
+
+    // Clear the categories relation
+    service.categories = [];
+    await this.salonServiceRepository.save(service);
+
+    // Now delete the service
+    const result = await this.salonServiceRepository.delete({ serviceId });
+
+    if (result.affected === 0) {
+      throw new GenericError(
+        `Failed to delete service with ID ${serviceId}`,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    return {
+      message: `Service with ID ${serviceId} has been deleted successfully`,
+    };
   }
 }
