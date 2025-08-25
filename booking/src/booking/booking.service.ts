@@ -13,10 +13,12 @@ import {
   SalonWorker,
   SalonWorkerLeave,
   TimeString,
+  User,
 } from '@charmbooking/common';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Between, In } from 'typeorm';
+import { GetBookingsResponseDto } from './dto/bookingResponseDto';
 
 type Event = { t: TimeString; delta: number };
 
@@ -35,6 +37,8 @@ export class BookingService {
     private readonly weeklyHoursRepository: Repository<SalonWeeklyHours>,
     @InjectRepository(SalonHoliday)
     private readonly holidayRepository: Repository<SalonHoliday>,
+    @InjectRepository(User)
+    private readonly customerRepository: Repository<User>,
   ) {}
 
   async findById(id: string): Promise<Booking | null> {
@@ -464,9 +468,34 @@ export class BookingService {
     return days[day];
   }
 
-  async getBookings(salonId: string): Promise<Booking[]> {
-    return this.bookingRepository.find({
+  async getBookings(salonId: string): Promise<GetBookingsResponseDto[]> {
+    const bookings = await this.bookingRepository.find({
       where: { salon_id: salonId },
+      relations: ['user', 'salonService', 'worker'],
+      order: {
+        created_at: 'DESC', // Order by creation date, newest first
+        booking_date: 'ASC', // Then by booking date
+        start_time: 'ASC', // Then by start time
+      },
     });
+
+    return bookings.map((booking, index) => ({
+      id: (index + 1).toString(), // Sequential number starting from 1
+      customerId: booking.user_id,
+      customerName: `${booking.user?.firstName} ${booking.user?.lastName}`,
+      customerEmail: booking.user?.email,
+      customerPhone: booking.user?.phone || '',
+      serviceId: booking.salon_service_id,
+      serviceName: booking.salonService?.name || '',
+      workerId: booking.worker_id,
+      workerName: booking.worker?.name || '',
+      date: booking.booking_date,
+      time: booking.start_time,
+      duration: booking.salonService?.duration || 0,
+      amount: booking.amount || 0,
+      status: booking.status,
+      paymentStatus:
+        booking.status === BookingStatus.CONFIRMED ? 'PAID' : 'PENDING',
+    }));
   }
 }

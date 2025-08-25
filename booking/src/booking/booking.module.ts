@@ -9,6 +9,7 @@ import {
   SalonWeeklyHours,
   SalonWorker,
   SalonWorkerLeave,
+  User,
 } from '@charmbooking/common';
 
 @Module({
@@ -20,6 +21,7 @@ import {
       SalonService,
       SalonWeeklyHours,
       SalonHoliday,
+      User,
     ]),
   ],
   controllers: [BookingController],
