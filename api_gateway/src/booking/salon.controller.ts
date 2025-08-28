@@ -60,4 +60,11 @@ export class SalonController {
     const pattern = { cmd: 'get_salon_profile' };
     return firstValueFrom(this.client.send<any>(pattern, id));
   }
+
+  @Post('addSalonReview')
+  async addSalonReview(@Body() reviewData: any): Promise<any> {
+    console.log('Received salon review data:', reviewData);
+    const pattern = { cmd: 'add_salon_review' };
+    return firstValueFrom(this.client.send<any>(pattern, { reviewData }));
+  }
 }

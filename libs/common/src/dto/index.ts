@@ -1,3 +1,5 @@
+import { SalonWorker } from '../entities/salon_worker.entity';
+
 export interface CheckServiceTimeAvailabilityDto {
   salonId: string;
   serviceId: string;
@@ -30,7 +32,7 @@ export interface BookingSlot {
   startTime: string;
   duration: number;
   buffer: number;
-  workerId: string;
+  worker: SalonWorker;
 }
 
 export interface BookingRequestDto {

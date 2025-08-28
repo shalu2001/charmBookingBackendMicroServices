@@ -50,3 +50,10 @@ export class SalonRegisterDTO {
   latitude: number;
   password: string;
 }
+
+export class SalonReviewRequestDto {
+  salonId: string;
+  userId: string;
+  rating: number;
+  comment: string;
+}

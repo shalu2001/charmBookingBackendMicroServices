@@ -14,14 +14,14 @@ export class SalonReview {
   reviewId: number;
 
   @Column()
-  salonId: number;
+  salonId: string;
 
   @ManyToOne(() => Salon, (salon) => salon.reviews)
   @JoinColumn({ name: 'salonId' })
   salon: Salon;
 
   @Column()
-  userId: number;
+  userId: string;
 
   @ManyToOne(() => User, (user) => user.reviews)
   @JoinColumn({ name: 'userId' })

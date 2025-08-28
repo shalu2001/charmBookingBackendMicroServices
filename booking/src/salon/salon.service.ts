@@ -10,8 +10,14 @@ import {
   SalonRankedRequestDto,
   SalonWithRank,
   UserRole,
+  SalonWeeklyHours,
+  SalonReview,
 } from '@charmbooking/common';
-import { SalonRegisterDTO, SalonResponseDTO } from 'src/dto/salonResponse';
+import {
+  SalonRegisterDTO,
+  SalonResponseDTO,
+  SalonReviewRequestDto,
+} from 'src/dto/salonResponse';
 import { GenericError } from '@charmbooking/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -28,6 +34,10 @@ export class SalonService {
     @InjectRepository(SalonAdmin)
     private salonAdminRepository: Repository<SalonAdmin>,
     private readonly bookingService: BookingService,
+    @InjectRepository(SalonWeeklyHours)
+    private readonly weeklyHoursRepository: Repository<SalonWeeklyHours>,
+    @InjectRepository(SalonReview)
+    private readonly salonReviewRepository: Repository<SalonReview>,
   ) {}
 
   private async checkSalonExists(email: string): Promise<void> {
@@ -283,12 +293,22 @@ export class SalonService {
   async findById(id: string): Promise<SalonResponseDTO> {
     const salon = await this.salonRepository.findOne({
       where: { id },
-      relations: ['services', 'services.categories', 'reviews', 'reviews.user'],
+      relations: [
+        'services',
+        'services.categories',
+        'reviews',
+        'reviews.user',
+        'images',
+      ],
     });
 
     if (!salon) {
       throw new Error('Salon not found');
     }
+    //salon weekly hours
+    const weeklyHours = await this.weeklyHoursRepository.find({
+      where: { salon_id: id },
+    });
     // Map reviews to only include user name
     const reviews = salon.reviews.map((review) => ({
       reviewId: review.reviewId,
@@ -304,6 +324,7 @@ export class SalonService {
     return {
       ...salon,
       reviews,
+      weeklyHours,
     } as SalonResponseDTO;
   }
 
@@ -316,5 +337,27 @@ export class SalonService {
       throw new GenericError('Salon not found', HttpStatus.NOT_FOUND);
     }
     return salon;
+  }
+
+  async addReview(reviewData: SalonReviewRequestDto): Promise<any> {
+    console.log('Adding salon review:', reviewData);
+    const { salonId, userId, rating, comment } = reviewData;
+
+    const newReview = this.salonReviewRepository.create({
+      salonId,
+      userId,
+      rating,
+      comment,
+    });
+
+    if (!newReview) {
+      throw new GenericError(
+        'Failed to create salon review',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+
+    await this.salonReviewRepository.save(newReview);
+    return newReview;
   }
 }

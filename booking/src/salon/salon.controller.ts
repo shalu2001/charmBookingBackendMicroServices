@@ -1,7 +1,7 @@
 import { Controller } from '@nestjs/common';
 import { MessagePattern } from '@nestjs/microservices';
 import { SalonService } from './salon.service';
-import { SalonRegisterDTO } from 'src/dto/salonResponse';
+import { SalonRegisterDTO, SalonReviewRequestDto } from 'src/dto/salonResponse';
 import { SalonRankedRequestDto, SalonWithRank } from '@charmbooking/common';
 
 @Controller('salon')
@@ -58,5 +58,16 @@ export class SalonController {
   async getSalonProfile(id: string): Promise<any> {
     const salon = await this.salonService.findSalonProfileById(id);
     return salon;
+  }
+
+  @MessagePattern({ cmd: 'add_salon_review' })
+  async addSalonReview({
+    reviewData,
+  }: {
+    reviewData: SalonReviewRequestDto;
+  }): Promise<any> {
+    console.log('Received salon review data:', reviewData);
+    const review = await this.salonService.addReview(reviewData);
+    return review;
   }
 }

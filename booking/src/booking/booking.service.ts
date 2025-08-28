@@ -130,7 +130,7 @@ export class BookingService {
         startTime,
         duration: serviceDuration,
         buffer: serviceBuffer,
-        workerId: worker.workerId,
+        worker: worker,
       }));
 
     let nextAvailableSlot: BookingSlot | undefined = undefined;
@@ -211,7 +211,7 @@ export class BookingService {
               startTime: current.toString(),
               duration: serviceDuration,
               buffer: serviceBuffer,
-              workerId: slotAvailableWorker.workerId,
+              worker: slotAvailableWorker,
             };
             break;
           }
@@ -433,7 +433,7 @@ export class BookingService {
     if (
       serviceTimeAvailability.slots.length === 0 ||
       serviceTimeAvailability.slots.findIndex(
-        (s) => s.workerId === data.workerId,
+        (s) => s.worker.workerId === data.workerId,
       ) === -1
     ) {
       throw new GenericError(
