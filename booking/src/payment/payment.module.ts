@@ -4,9 +4,14 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { PaymentsController } from './payment.controller';
 import { PayHereService } from './payment.service';
+import { BookingModule } from 'src/booking/booking.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PaymentDetails]), HttpModule],
+  imports: [
+    TypeOrmModule.forFeature([PaymentDetails]),
+    HttpModule,
+    BookingModule,
+  ],
   providers: [PayHereService],
   controllers: [PaymentsController],
 })

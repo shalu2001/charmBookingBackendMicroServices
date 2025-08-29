@@ -1,39 +1,35 @@
-import { Controller, Post, Body, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller } from '@nestjs/common';
+import { MessagePattern } from '@nestjs/microservices';
 import { PayHereService } from './payment.service';
-import { PayHereNotifyDTO } from 'src/dto/paymentDto';
+import { PayHereNotifyDTO } from '@charmbooking/common';
 
 @Controller('payments')
 export class PaymentsController {
   constructor(private payHereService: PayHereService) {}
 
-  @Post('initiate')
-  async initiatePayment(
-    @Body()
-    body: {
-      bookingId: string;
-      address1: string;
-      address2: string;
-      city: string;
-    },
-  ) {
+  @MessagePattern({ cmd: 'initiate_payment' })
+  async initiatePayment(data: {
+    bookingId: string;
+    address1: string;
+    address2: string;
+    city: string;
+  }) {
     return this.payHereService.buildCheckoutPayload({
-      bookingId: body.bookingId,
-      address1: body.address1,
-      address2: body.address2,
-      city: body.city,
+      bookingId: data.bookingId,
+      address1: data.address1,
+      address2: data.address2,
+      city: data.city,
     });
   }
 
-  @Post('notify')
-  @HttpCode(HttpStatus.OK)
-  async handleNotification(@Body() body: PayHereNotifyDTO) {
-    await this.payHereService.handlePaymentNotification(body);
+  @MessagePattern({ cmd: 'payment_notify' })
+  async handleNotification(data: PayHereNotifyDTO) {
+    await this.payHereService.handlePaymentNotification(data);
     return { status: 'received' };
   }
 
-  @Post('refund')
-  @HttpCode(HttpStatus.OK)
-  async refundBooking(@Body() body: { paymentId: string; reason: string }) {
-    return this.payHereService.refundBooking(body.paymentId, body.reason);
+  @MessagePattern({ cmd: 'refund_booking' })
+  async refundBooking(data: { paymentId: string; reason: string }) {
+    return this.payHereService.refundBooking(data.paymentId, data.reason);
   }
 }
