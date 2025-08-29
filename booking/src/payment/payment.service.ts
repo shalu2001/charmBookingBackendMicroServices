@@ -3,6 +3,8 @@ import {
   BookingStatus,
   GenericError,
   getConfig,
+  PayHereNotifyDTO,
+  PayHerePayload,
   PaymentDetails,
   PaymentStatus,
 } from '@charmbooking/common';
@@ -12,7 +14,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import * as crypto from 'crypto';
 import { BookingService } from 'src/booking/booking.service';
 import {
-  PayHereNotifyDTO,
   PayHereOAuthResponse,
   PayHereRefundResponse,
 } from 'src/dto/paymentDto';
@@ -47,8 +48,11 @@ export class PayHereService {
     currency: string;
     merchantSecret: string;
   }) {
+    const amountFormated = parseFloat(amount)
+      .toLocaleString('en-us', { minimumFractionDigits: 2 })
+      .replaceAll(',', '');
     const secretMd5 = this.generateMd5Hash(merchantSecret);
-    const raw = merchantId + orderId + amount + currency + secretMd5;
+    const raw = merchantId + orderId + amountFormated + currency + secretMd5;
     return this.generateMd5Hash(raw);
   }
 
@@ -62,7 +66,7 @@ export class PayHereService {
     address1: string;
     address2: string;
     city: string;
-  }) {
+  }): Promise<PayHerePayload> {
     const booking = await this.bookingService.findById(bookingId);
     if (!booking)
       throw new GenericError('Booking not found', HttpStatus.NOT_FOUND);
@@ -86,19 +90,20 @@ export class PayHereService {
       merchantSecret,
     });
     return {
-      merchantId: config.payHere.merchantId,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      sandbox: true,
+      merchant_id: merchantId,
+      first_name: user.firstName,
+      last_name: user.lastName,
       email: user.email,
       phone: user.phone,
       address: [address1, address2].filter(Boolean).join(', '),
       city,
       country: 'LK',
-      orderId,
+      order_id: orderId,
       items: booking.salonService.name,
       currency: 'LKR',
       amount: booking.amount,
-      notifyURL,
+      notify_url: notifyURL,
       hash,
     };
   }

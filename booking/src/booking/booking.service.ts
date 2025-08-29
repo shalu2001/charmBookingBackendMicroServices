@@ -42,7 +42,10 @@ export class BookingService {
   ) {}
 
   async findById(id: string): Promise<Booking | null> {
-    return this.bookingRepository.findOne({ where: { id } });
+    return this.bookingRepository.findOne({
+      where: { id },
+      relations: ['user', 'salonService'],
+    });
   }
 
   async update(id: string, updateData: Partial<Booking>): Promise<Booking> {

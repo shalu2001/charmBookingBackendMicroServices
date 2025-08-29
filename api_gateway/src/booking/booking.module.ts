@@ -7,6 +7,7 @@ import { SalonCategoryController } from './salon_category.controller';
 import { JwtModule } from '@nestjs/jwt/dist/jwt.module';
 import { getConfig } from '@charmbooking/common';
 import { SalonWorkerController } from './salon_worker.controller';
+import { PaymentsController } from './payment.controller';
 
 const config = getConfig();
 
@@ -30,6 +31,7 @@ const config = getConfig();
     SalonController,
     SalonCategoryController,
     SalonWorkerController,
+    PaymentsController,
   ],
 })
 export class BookingModule {}

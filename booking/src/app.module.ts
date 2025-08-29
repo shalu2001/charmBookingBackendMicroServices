@@ -7,6 +7,7 @@ import { SalonServiceModule } from './salon_service/salon_service.module';
 import { SalonCategoryModule } from './salon_category/salon_category.module';
 import { SalonWorkerModule } from './salon_worker/salon_worker.module';
 import { BookingModule } from './booking/booking.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { BookingModule } from './booking/booking.module';
     SalonCategoryModule,
     SalonWorkerModule,
     BookingModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],
