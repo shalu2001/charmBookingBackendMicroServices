@@ -5,8 +5,12 @@ import { CreateUserDto } from 'src/dto/createUserDTO';
 import * as bcrypt from 'bcrypt';
 import { RpcException } from '@nestjs/microservices';
 import { JwtService } from '@nestjs/jwt';
-import { LoginUserResponseDTO } from 'src/dto/loginUserResponseDTO';
-import { LoginUserDto } from 'src/dto/loginUserRequestDTO';
+import {
+  LoginUserResponseDTO,
+  UpdatePasswordDto,
+  UserDetailsDTO,
+} from 'src/dto/userDTO';
+import { LoginUserDto } from 'src/dto/userDTO';
 import { GenericError, User, UserRole } from '@charmbooking/common';
 
 @Injectable()
@@ -16,6 +20,70 @@ export class UserService {
     private userRepository: Repository<User>,
     private jwtService: JwtService,
   ) {}
+
+  async getUserById(userId: string): Promise<UserDetailsDTO> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new GenericError('User not found', HttpStatus.NOT_FOUND);
+    }
+    // Map only the fields you want to expose
+    const userDetails: UserDetailsDTO = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      dateOfBirth: user.dateOfBirth,
+      phone: user.phone,
+    };
+    return userDetails;
+  }
+
+  async updateUserById(
+    userId: string,
+    updateUserDto: UserDetailsDTO,
+  ): Promise<UserDetailsDTO> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new GenericError('User not found', HttpStatus.NOT_FOUND);
+    }
+    // Update user fields
+    user.firstName = updateUserDto.firstName;
+    user.lastName = updateUserDto.lastName;
+    user.email = updateUserDto.email;
+    user.dateOfBirth = updateUserDto.dateOfBirth;
+    user.phone = updateUserDto.phone;
+    await this.userRepository.save(user);
+    // Return updated user details
+    const updatedUserDetails: UserDetailsDTO = {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      dateOfBirth: user.dateOfBirth,
+      phone: user.phone,
+    };
+    return updatedUserDetails;
+  }
+
+  async updateUserPassword(
+    userId: string,
+    updatePasswordDto: UpdatePasswordDto,
+  ): Promise<void> {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
+    if (!user) {
+      throw new GenericError('User not found', HttpStatus.NOT_FOUND);
+    }
+    const isOldPasswordValid = await bcrypt.compare(
+      updatePasswordDto.oldPassword,
+      user.password,
+    );
+    if (!isOldPasswordValid) {
+      throw new GenericError(
+        'Old password is incorrect',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    user.password = await bcrypt.hash(updatePasswordDto.newPassword, 10);
+    await this.userRepository.save(user);
+  }
 
   //-----------------------Register a new user
   async register(createUserDto: CreateUserDto): Promise<User> {
@@ -70,6 +138,7 @@ export class UserService {
       });
       await this.userRepository.save(user);
       return {
+        customerId: user.id,
         email: user.email,
         firstName: user.firstName,
         lastName: user.lastName,
