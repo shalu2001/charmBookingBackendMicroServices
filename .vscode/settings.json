@@ -4,5 +4,6 @@
         "**/node_modules": true,
         "**/dist": true
     },
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "prettier.endOfLine": "auto"
 }

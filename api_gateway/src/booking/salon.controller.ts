@@ -1,3 +1,4 @@
+import { SalonRankedRequestDto } from '@charmbooking/common';
 import {
   Body,
   Controller,
@@ -5,6 +6,7 @@ import {
   Inject,
   Param,
   Post,
+  Query,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
@@ -22,6 +24,25 @@ export class SalonController {
     const pattern = { cmd: 'get_salons' };
     const data = {};
     return firstValueFrom(this.client.send<any>(pattern, data));
+  }
+
+  @Get('getSalonsRanked')
+  async getSalonsRanked(
+    @Query('categoryId') categoryId: number,
+    @Query('longitude') longitude: number,
+    @Query('latitude') latitude: number,
+    @Query('date') date: string,
+    @Query('time') time: string,
+  ): Promise<any> {
+    const request: SalonRankedRequestDto = {
+      categoryId: Number(categoryId),
+      longitude: Number(longitude),
+      latitude: Number(latitude),
+      date,
+      time,
+    };
+    const pattern = { cmd: 'get_salons_ranked' };
+    return firstValueFrom(this.client.send<any>(pattern, request));
   }
 
   @Get('getSalon/:id')

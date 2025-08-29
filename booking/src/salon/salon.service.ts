@@ -101,7 +101,7 @@ export class SalonService {
           salon.latitude,
           salon.longitude,
         );
-        const distanceScore = ((20 - distanceInKm) / 20) * 100;
+        const distanceScore = ((100 - distanceInKm) / 100) * 100;
 
         // Reviews score - max 35 points
         // Calculate average rating (scale 1-5)
@@ -194,6 +194,7 @@ export class SalonService {
         };
       }),
     );
+    console.log('Salon scores computed:', salonScores);
     // Filter salons with score at least 50, and sort by total score
     const rankedSalons = salonScores
       .filter((salon) => salon.score >= 50)
