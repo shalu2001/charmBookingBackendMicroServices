@@ -1,4 +1,13 @@
-import { Controller, Post, Inject, Body, Get, Query } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Inject,
+  Body,
+  Get,
+  Query,
+  Put,
+  Param,
+} from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
 
@@ -23,19 +32,23 @@ export class UserController {
     );
   }
 
-  @Post('updateCustomerByID')
+  @Put('updateCustomerByID/:id')
   async updateCustomerByID(
-    @Query('id') id: string,
-    @Body() user: any,
+    @Param('id') id: string,
+    @Body() updateData: any,
   ): Promise<any> {
+    console.log('Updating user:', id, updateData);
     return await firstValueFrom(
-      this.client.send({ cmd: 'update_user_by_id' }, { id, ...user }),
+      this.client.send(
+        { cmd: 'update_user_by_id' },
+        { userId: id, updateUserDto: updateData },
+      ),
     );
   }
 
-  @Post('updatePassword')
+  @Put('updatePassword/:id')
   async updatePassword(
-    @Query('id') id: string,
+    @Param('id') id: string,
     @Body()
     { oldPassword, newPassword }: { oldPassword: string; newPassword: string },
   ): Promise<any> {

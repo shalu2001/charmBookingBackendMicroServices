@@ -28,10 +28,13 @@ export class UserController {
   }
 
   @MessagePattern({ cmd: 'update_user_by_id' })
-  async updateUserById(
-    userId: string,
-    updateUserDto: UserDetailsDTO,
-  ): Promise<any> {
+  async updateUserById(data: {
+    userId: string;
+    updateUserDto: UserDetailsDTO;
+  }): Promise<any> {
+    console.log(data);
+    const { userId, updateUserDto } = data;
+    console.log(userId, updateUserDto);
     return this.userService.updateUserById(userId, updateUserDto);
   }
 

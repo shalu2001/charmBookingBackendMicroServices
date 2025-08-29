@@ -39,28 +39,33 @@ export class UserService {
 
   async updateUserById(
     userId: string,
-    updateUserDto: UserDetailsDTO,
+    updateUserDto: Partial<UserDetailsDTO>,
   ): Promise<UserDetailsDTO> {
     const user = await this.userRepository.findOne({ where: { id: userId } });
     if (!user) {
       throw new GenericError('User not found', HttpStatus.NOT_FOUND);
     }
-    // Update user fields
-    user.firstName = updateUserDto.firstName;
-    user.lastName = updateUserDto.lastName;
-    user.email = updateUserDto.email;
-    user.dateOfBirth = updateUserDto.dateOfBirth;
-    user.phone = updateUserDto.phone;
-    await this.userRepository.save(user);
+
+    // Update only provided fields
+    if (updateUserDto.firstName !== undefined)
+      user.firstName = updateUserDto.firstName;
+    if (updateUserDto.lastName !== undefined)
+      user.lastName = updateUserDto.lastName;
+    if (updateUserDto.email !== undefined) user.email = updateUserDto.email;
+    if (updateUserDto.dateOfBirth !== undefined)
+      user.dateOfBirth = updateUserDto.dateOfBirth;
+    if (updateUserDto.phone !== undefined) user.phone = updateUserDto.phone;
+
+    const savedUser = await this.userRepository.save(user);
+
     // Return updated user details
-    const updatedUserDetails: UserDetailsDTO = {
-      firstName: user.firstName,
-      lastName: user.lastName,
-      email: user.email,
-      dateOfBirth: user.dateOfBirth,
-      phone: user.phone,
+    return {
+      firstName: savedUser.firstName,
+      lastName: savedUser.lastName,
+      email: savedUser.email,
+      dateOfBirth: savedUser.dateOfBirth,
+      phone: savedUser.phone,
     };
-    return updatedUserDetails;
   }
 
   async updateUserPassword(
