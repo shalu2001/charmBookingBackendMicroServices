@@ -67,7 +67,7 @@ export class SalonService {
     time,
   }: SalonRankedRequestDto): Promise<SalonWithRank[]> {
     const allSalons = await this.salonRepository.find({
-      relations: ['services', 'services.categories', 'reviews'],
+      relations: ['services', 'services.categories', 'reviews', 'images'],
     });
 
     if (!allSalons || allSalons.length === 0) {
