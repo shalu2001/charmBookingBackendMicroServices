@@ -12,6 +12,8 @@ import {
   UserRole,
   SalonWeeklyHours,
   SalonReview,
+  SalonService as SalonServiceEntity,
+  ServiceWithAvailability,
 } from '@charmbooking/common';
 import {
   SalonRegisterDTO,
@@ -128,26 +130,29 @@ export class SalonService {
             (category) => category.categoryId === categoryId,
           ),
         );
-
+        let consolidatedAvailabilityResults: ServiceWithAvailability[] = [];
         if (categoryServices.length > 0) {
           // Check availability for each qualifying service
-          const availabilityChecks = await Promise.all(
-            categoryServices.map((service) =>
-              this.bookingService.checkServiceTimeAvailability(
-                salon.id,
-                service.serviceId,
-                date,
-                time,
-              ),
-            ),
+          consolidatedAvailabilityResults = await Promise.all(
+            categoryServices.map(async (service) => {
+              return {
+                ...(await this.bookingService.checkServiceTimeAvailability(
+                  salon.id,
+                  service.serviceId,
+                  date,
+                  time,
+                )),
+                ...service,
+              };
+            }),
           );
 
           // If any service is available at the requested time, assign full points
           // Otherwise give partial points based on how many services have slots later
-          const hasExactSlot = availabilityChecks.some(
+          const hasExactSlot = consolidatedAvailabilityResults.some(
             (check) => check.slots.length > 0,
           );
-          const hasLaterSlot = availabilityChecks.some(
+          const hasLaterSlot = consolidatedAvailabilityResults.some(
             (check) => check.nextAvailableSlot,
           );
 
@@ -155,7 +160,7 @@ export class SalonService {
             availabilityScore = 65;
           } else if (hasLaterSlot) {
             // Find the soonest nextAvailableSlot among all services
-            const nextSlots = availabilityChecks
+            const nextSlots = consolidatedAvailabilityResults
               .map((check) => check.nextAvailableSlot)
               .filter((slot) => slot && slot.date)
               .sort(
@@ -186,6 +191,7 @@ export class SalonService {
 
         return {
           ...salon,
+          services: consolidatedAvailabilityResults,
           score: totalScore,
           distanceScore,
           reviewScore,

@@ -17,7 +17,7 @@ import {
 } from '@charmbooking/common';
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, Between, In } from 'typeorm';
+import { Repository, In } from 'typeorm';
 import { GetBookingsResponseDto } from './dto/bookingResponseDto';
 
 type Event = { t: TimeString; delta: number };

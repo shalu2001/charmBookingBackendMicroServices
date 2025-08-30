@@ -1,4 +1,5 @@
 import { SalonWorker } from '../entities/salon_worker.entity';
+import { SalonService } from '../entities/salon_service.entity';
 
 export interface CheckServiceTimeAvailabilityDto {
   salonId: string;
@@ -11,6 +12,11 @@ export interface CheckServiceTimeAvailabilityResponseDto {
   slots: BookingSlot[];
   nextAvailableSlot?: BookingSlot;
 }
+
+export type ServiceWithAvailability = SalonService & {
+  slots: BookingSlot[];
+  nextAvailableSlot?: BookingSlot;
+};
 
 export interface GetAvailableSlotsRequestDto {
   salonId: string;
