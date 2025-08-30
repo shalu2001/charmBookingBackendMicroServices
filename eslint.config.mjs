@@ -10,7 +10,12 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default tseslint.config(
   {
-    ignores: ['eslint.config.mjs', '**/dist/**', '**/node_modules/**'],
+    ignores: [
+      'eslint.config.mjs',
+      'start-host-script.js',
+      '**/dist/**',
+      '**/node_modules/**',
+    ],
   },
   eslint.configs.recommended,
   ...tseslint.configs.recommendedTypeChecked,
@@ -26,7 +31,6 @@ export default tseslint.config(
         projectService: true,
         tsconfigRootDir: __dirname,
         project: [
-          './tsconfig.json',
           './api_gateway/tsconfig.json',
           './booking/tsconfig.json',
           './user/tsconfig.json',

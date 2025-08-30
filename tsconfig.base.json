@@ -12,6 +12,7 @@
     "skipLibCheck": true,
     "paths": {
       "@charmbooking/common": ["libs/common/src"]
-    }
+    },
+    "include": ["start-host-script.js"]
   }
 }
