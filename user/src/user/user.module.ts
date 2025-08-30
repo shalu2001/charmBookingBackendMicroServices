@@ -4,12 +4,12 @@ import { UserController } from './user.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { getConfig, User } from '@charmbooking/common';
+import { getConfig, User, Booking } from '@charmbooking/common';
 
 const config = getConfig();
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User]),
+    TypeOrmModule.forFeature([User, Booking]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

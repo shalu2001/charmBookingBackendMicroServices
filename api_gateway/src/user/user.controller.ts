@@ -59,4 +59,11 @@ export class UserController {
       ),
     );
   }
+
+  @Get(':id/getUserBookingsByID')
+  async getUserBookingsByID(@Param('id') id: string): Promise<any> {
+    return await firstValueFrom(
+      this.client.send({ cmd: 'get_user_bookings_by_id' }, id),
+    );
+  }
 }
