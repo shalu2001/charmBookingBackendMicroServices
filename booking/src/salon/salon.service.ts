@@ -196,17 +196,30 @@ export class SalonService {
     );
     console.log('Salon scores computed:', salonScores);
     // Filter salons with score at least 50, and sort by total score
-    const rankedSalons = salonScores
+    let rankedSalons = salonScores
       .filter((salon) => salon.score >= 50)
       .sort((a, b) => b.score - a.score)
       .map((salon, index) => ({
         ...salon,
         rank: index + 1,
-        // Clean up temporary scoring fields if you don't want them in response
         distanceScore: undefined,
         reviewScore: undefined,
         availabilityScore: undefined,
       }));
+
+    // If no salons meet the score threshold, return top 3 by score anyway
+    if (rankedSalons.length < 3) {
+      rankedSalons = salonScores
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 3)
+        .map((salon, index) => ({
+          ...salon,
+          rank: index + 1,
+          distanceScore: undefined,
+          reviewScore: undefined,
+          availabilityScore: undefined,
+        }));
+    }
 
     return rankedSalons;
   }
