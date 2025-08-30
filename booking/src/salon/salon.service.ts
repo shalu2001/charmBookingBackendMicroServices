@@ -19,6 +19,7 @@ import {
   SalonRegisterDTO,
   SalonResponseDTO,
   SalonReviewRequestDto,
+  SalonWeeklyHoursDTO,
 } from 'src/dto/salonResponse';
 import { GenericError } from '@charmbooking/common';
 import * as bcrypt from 'bcrypt';
@@ -373,5 +374,37 @@ export class SalonService {
 
     await this.salonReviewRepository.save(newReview);
     return newReview;
+  }
+
+  async addSalonWeeklyHours(
+    salonID: string,
+    weeklyHoursData: SalonWeeklyHoursDTO[],
+  ): Promise<any> {
+    console.log('Received salon weekly hours data:', weeklyHoursData);
+    const salon = await this.salonRepository.findOne({
+      where: { id: salonID },
+    });
+    if (!salon) {
+      throw new GenericError('Salon not found', HttpStatus.NOT_FOUND);
+    }
+    const savedWeeklyHours: SalonWeeklyHours[] = [];
+    for (const dayData of weeklyHoursData) {
+      const newWeeklyHour = this.weeklyHoursRepository.create({
+        salon_id: salonID,
+        day_of_week: dayData.day,
+        open_time: dayData.open_time,
+        close_time: dayData.close_time,
+      });
+      const saved = await this.weeklyHoursRepository.save(newWeeklyHour);
+      savedWeeklyHours.push(saved);
+    }
+    return savedWeeklyHours;
+  }
+
+  async getSalonWeeklyHours(salonID: string): Promise<SalonWeeklyHours[]> {
+    const weeklyHours = await this.weeklyHoursRepository.find({
+      where: { salon_id: salonID },
+    });
+    return weeklyHours;
   }
 }

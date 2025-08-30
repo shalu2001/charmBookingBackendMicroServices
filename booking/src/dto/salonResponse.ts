@@ -1,5 +1,7 @@
 // import { SalonService } from '@charmbooking/common';
 
+import { DayOfWeek } from '@charmbooking/common';
+
 export class UserMinimalDTO {
   firstName: string;
   lastName: string;
@@ -56,4 +58,10 @@ export class SalonReviewRequestDto {
   userId: string;
   rating: number;
   comment: string;
+}
+
+export class SalonWeeklyHoursDTO {
+  day: DayOfWeek;
+  open_time: string;
+  close_time: string;
 }

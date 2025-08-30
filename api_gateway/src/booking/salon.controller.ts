@@ -6,6 +6,7 @@ import {
   Inject,
   Param,
   Post,
+  Put,
   Query,
   UploadedFiles,
   UseInterceptors,
@@ -87,5 +88,40 @@ export class SalonController {
     console.log('Received salon review data:', reviewData);
     const pattern = { cmd: 'add_salon_review' };
     return firstValueFrom(this.client.send<any>(pattern, { reviewData }));
+  }
+
+  @Post(':id/addSalonWeeklyHours')
+  async addSalonWeeklyHours(
+    @Param('id') salonID: string,
+    @Body() data: any,
+  ): Promise<any> {
+    const pattern = { cmd: 'add_salon_weekly_hours' };
+    return firstValueFrom(
+      this.client.send<any>(pattern, {
+        salonID,
+        weeklyHoursData: data.weeklyHours,
+      }),
+    );
+  }
+
+  @Put(':id/updateSalonWeeklyHours')
+  async updateSalonWeeklyHours(
+    @Param('id') salonID: string,
+    @Body() data: any,
+  ): Promise<any> {
+    console.log('Received salon weekly hours update data:', data);
+    const pattern = { cmd: 'update_salon_weekly_hours' };
+    return firstValueFrom(
+      this.client.send<any>(pattern, {
+        salonID,
+        weeklyHoursData: data.weeklyHours,
+      }),
+    );
+  }
+
+  @Get(':id/getSalonWeeklyHours')
+  async getSalonWeeklyHours(@Param('id') salonID: string): Promise<any> {
+    const pattern = { cmd: 'get_salon_weekly_hours' };
+    return firstValueFrom(this.client.send<any>(pattern, salonID));
   }
 }

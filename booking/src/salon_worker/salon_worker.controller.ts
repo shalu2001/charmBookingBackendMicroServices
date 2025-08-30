@@ -23,10 +23,29 @@ export class SalonWorkerController {
     return this.salonWorkerService.getWorkersByService(serviceId);
   }
 
-  // @MessagePattern({ cmd: 'update_salon_worker' })
-  // async updateSalonWorker(data: any): Promise<any> {
-  //     return this.salonWorkerService.updateSalonWorker(data);
-  // }
+  @MessagePattern({ cmd: 'get_salon_workers' })
+  async getSalonWorkers(salonId: UUID): Promise<any> {
+    return this.salonWorkerService.getSalonWorkers(salonId);
+  }
+
+  @MessagePattern({ cmd: 'get_salon_worker_leaves' })
+  async getSalonWorkerLeaves(salonId: UUID, workerId: UUID): Promise<any> {
+    return this.salonWorkerService.getSalonWorkerLeaves(salonId, workerId);
+  }
+
+  @MessagePattern({ cmd: 'add_salon_worker_leave' })
+  async addSalonWorkerLeave(
+    salonId: UUID,
+    workerId: UUID,
+    data: any,
+  ): Promise<any> {
+    return this.salonWorkerService.addSalonWorkerLeave(salonId, workerId, data);
+  }
+
+  @MessagePattern({ cmd: 'update_salon_worker' })
+  async updateSalonWorker(data: any): Promise<any> {
+    return this.salonWorkerService.updateSalonWorker(data);
+  }
 
   // @MessagePattern({ cmd: 'delete_salon_worker' })
   // async deleteSalonWorker(id: string): Promise<any> {

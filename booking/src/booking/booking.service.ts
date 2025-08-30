@@ -67,6 +67,7 @@ export class BookingService {
     bookingDate: string,
     startTime: string,
   ): Promise<CheckServiceTimeAvailabilityResponseDto> {
+    //TODO: Check for Salon holidays
     const service = await this.serviceRepository.findOne({
       where: { serviceId: salonServiceId },
       relations: ['salon'],
@@ -105,7 +106,11 @@ export class BookingService {
         salon_id: salonId,
         salon_service_id: salonServiceId,
         booking_date: bookingDate,
-        status: In([BookingStatus.PENDING, BookingStatus.CONFIRMED]),
+        status: In([
+          BookingStatus.PENDING,
+          BookingStatus.CONFIRMED,
+          BookingStatus.COMPLETED,
+        ]),
       },
     });
     const filteredSlotBookings = bookings.filter((booking) => {
@@ -285,7 +290,11 @@ export class BookingService {
       where: {
         worker_id: In(workerIds),
         booking_date: date,
-        status: In([BookingStatus.PENDING, BookingStatus.CONFIRMED]),
+        status: In([
+          BookingStatus.PENDING,
+          BookingStatus.CONFIRMED,
+          BookingStatus.COMPLETED,
+        ]),
       },
       relations: ['salonService'],
     });
@@ -500,5 +509,46 @@ export class BookingService {
       paymentStatus:
         booking.status === BookingStatus.CONFIRMED ? 'PAID' : 'PENDING',
     }));
+  }
+  async useCancelBooking(bookingId: string, reason: string): Promise<void> {
+    const booking = await this.bookingRepository.findOne({
+      where: { id: bookingId },
+      relations: ['user', 'salonService', 'worker'],
+    });
+    if (!booking) {
+      throw new GenericError('Booking not found', HttpStatus.NOT_FOUND);
+    }
+
+    // Check if the booking can be canceled (e.g., not already completed)
+    if (booking.status === BookingStatus.COMPLETED) {
+      throw new GenericError(
+        'Cannot cancel completed booking',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    //TODO: Get the current date, check if current date is less than 24 hours from booking date, no refund else send refund request to payHere service
+    //If u need time stuff use TimeString
+  }
+
+  async salonCancelBooking(bookingId: string, reason: string): Promise<void> {
+    const booking = await this.bookingRepository.findOne({
+      where: { id: bookingId },
+      relations: ['user', 'salonService', 'worker'],
+    });
+    if (!booking) {
+      throw new GenericError('Booking not found', HttpStatus.NOT_FOUND);
+    }
+
+    // Check if the booking can be canceled (e.g., not already completed)
+    if (booking.status === BookingStatus.COMPLETED) {
+      throw new GenericError(
+        'Cannot cancel completed booking',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    //TODO: Always give refund when salon cancelling
+    //If u need time stuff use TimeString
   }
 }

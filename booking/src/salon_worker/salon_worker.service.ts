@@ -6,6 +6,7 @@ import {
   Salon,
   SalonService,
   SalonWorker,
+  SalonWorkerLeave,
 } from '@charmbooking/common';
 import { CreateSalonWorkerDto } from './dto/salon_worker.dto';
 import { UUID } from 'crypto';
@@ -17,6 +18,8 @@ export class SalonWorkerService {
     private salonWorkerRepository: Repository<SalonWorker>,
     @InjectRepository(SalonService)
     private salonServiceRepository: Repository<SalonService>,
+    @InjectRepository(SalonWorkerLeave)
+    private salonWorkerLeaveRepository: Repository<SalonWorkerLeave>,
   ) {}
 
   async createSalonWorker(data: CreateSalonWorkerDto): Promise<SalonWorker> {
@@ -62,5 +65,68 @@ export class SalonWorkerService {
         },
       },
     });
+  }
+
+  async getSalonWorkers(salonId: UUID): Promise<SalonWorker[]> {
+    return this.salonWorkerRepository.find({
+      where: {
+        salonId: salonId,
+      },
+    });
+  }
+
+  async addSalonWorkerLeave(
+    salonId: UUID,
+    workerId: UUID,
+    leaveDates: Date[],
+  ): Promise<void> {
+    const worker = await this.salonWorkerRepository.findOne({
+      where: {
+        workerId: workerId,
+        salonId: salonId,
+      },
+    });
+
+    if (!worker) {
+      throw new GenericError('Worker not found', HttpStatus.NOT_FOUND);
+    }
+
+    // Save each leave date as a separate SalonWorkerLeave record
+    for (const leaveDate of leaveDates) {
+      const leave = this.salonWorkerLeaveRepository.create({
+        workerId: workerId,
+        worker: worker,
+        date: leaveDate.toISOString().split('T')[0], // 'YYYY-MM-DD'
+        startTime: '00:00:00', // or accept as param
+        endTime: '23:59:59', // or accept as param
+      });
+      await this.salonWorkerLeaveRepository.save(leave);
+    }
+  }
+
+  async getSalonWorkerLeaves(salonId: UUID, workerId: UUID): Promise<any> {
+    return this.salonWorkerLeaveRepository.find({
+      where: {
+        workerId: workerId,
+        worker: {
+          salonId: salonId,
+        },
+      },
+    });
+  }
+
+  async updateSalonWorker(data: any): Promise<SalonWorker> {
+    const worker = await this.salonWorkerRepository.findOne({
+      where: {
+        workerId: data.id,
+      },
+    });
+
+    if (!worker) {
+      throw new GenericError('Worker not found', HttpStatus.NOT_FOUND);
+    }
+
+    this.salonWorkerRepository.merge(worker, data);
+    return this.salonWorkerRepository.save(worker);
   }
 }
