@@ -11,7 +11,7 @@ import {
   UserDetailsDTO,
 } from 'src/dto/userDTO';
 import { LoginUserDto } from 'src/dto/userDTO';
-import { GenericError, User, UserRole } from '@charmbooking/common';
+import { Booking, GenericError, User, UserRole } from '@charmbooking/common';
 
 @Injectable()
 export class UserService {
@@ -19,6 +19,8 @@ export class UserService {
     @InjectRepository(User)
     private userRepository: Repository<User>,
     private jwtService: JwtService,
+    @InjectRepository(Booking)
+    private bookingRepository: Repository<Booking>,
   ) {}
 
   async getUserById(userId: string): Promise<UserDetailsDTO> {
@@ -158,5 +160,34 @@ export class UserService {
       // Wrap unexpected errors
       throw new RpcException(`Error logging in user: ${error}`);
     }
+  }
+
+  async getUserBookingsById(userId: string): Promise<any> {
+    const bookings = await this.bookingRepository.find({
+      where: { user_id: userId },
+      relations: ['salonService', 'salon'],
+    });
+    if (!bookings || bookings.length === 0) {
+      throw new GenericError(
+        'No bookings found for this user',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+    return bookings.map((booking) => ({
+      id: booking.id,
+      user_id: booking.user_id,
+      salon_id: booking.salon_id,
+      salon_service_id: booking.salon_service_id,
+      amount: booking.amount,
+      payment_id: booking.payment_id,
+      worker_id: booking.worker_id,
+      booking_date: booking.booking_date,
+      start_time: booking.start_time,
+      duration: booking.salonService?.duration || null,
+      status: booking.status,
+      created_at: booking.created_at,
+      serviceName: booking.salonService?.name || null,
+      salonName: booking.salon?.name || null,
+    }));
   }
 }

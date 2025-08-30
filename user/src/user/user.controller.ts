@@ -45,4 +45,9 @@ export class UserController {
   ): Promise<any> {
     return this.userService.updateUserPassword(userId, updatePasswordDto);
   }
+
+  @MessagePattern({ cmd: 'get_user_bookings_by_id' })
+  async getUserBookingsById(userId: string): Promise<any> {
+    return this.userService.getUserBookingsById(userId);
+  }
 }
