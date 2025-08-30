@@ -101,7 +101,7 @@ export class SalonService {
           salon.latitude,
           salon.longitude,
         );
-        const distanceScore = ((100 - distanceInKm) / 100) * 100;
+        const distanceScore = ((20 - distanceInKm) / 20) * 100;
 
         // Reviews score - max 35 points
         // Calculate average rating (scale 1-5)
@@ -114,7 +114,7 @@ export class SalonService {
           // Weight by number of reviews (more reviews = more reliable)
           // Factor starts at 0.5 and approaches 1 as review count increases
           const reviewCountFactor =
-            1 - 0.5 * Math.exp(-salon.reviews.length / 10);
+            1 - 1 * Math.exp(-salon.reviews.length / 10);
 
           // Convert to 35 point scale with review count weighting
           reviewScore = (avgRating / 5) * 35 * reviewCountFactor;
@@ -202,9 +202,6 @@ export class SalonService {
       .map((salon, index) => ({
         ...salon,
         rank: index + 1,
-        distanceScore: undefined,
-        reviewScore: undefined,
-        availabilityScore: undefined,
       }));
 
     // If no salons meet the score threshold, return top 3 by score anyway
@@ -215,9 +212,6 @@ export class SalonService {
         .map((salon, index) => ({
           ...salon,
           rank: index + 1,
-          distanceScore: undefined,
-          reviewScore: undefined,
-          availabilityScore: undefined,
         }));
     }
 
