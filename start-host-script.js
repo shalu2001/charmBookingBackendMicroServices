@@ -21,7 +21,7 @@ const localtunnel = require('localtunnel');
   console.log(`LocalTunnel running at: ${tunnel.url}`);
   // Now run the dev servers
   const { spawn } = require('child_process');
-  const child = spawn('pnpm', ['--parallel', '-r', 'run', 'start'], {
+  const child = spawn('pnpm', ['--parallel', '-r', 'run', 'start:dev'], {
     stdio: 'inherit',
     shell: true,
   });

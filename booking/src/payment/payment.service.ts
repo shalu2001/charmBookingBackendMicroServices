@@ -70,7 +70,7 @@ export class PayHereService {
     const booking = await this.bookingService.findById(bookingId);
     if (!booking)
       throw new GenericError('Booking not found', HttpStatus.NOT_FOUND);
-    const orderId = `${booking.id}-${Date.now()}`;
+    const orderId = `${booking.id}:${Date.now()}`;
     const notifyURL = `${config.payHere.backendUrl}/payments/notify`;
     const user = booking.user;
     const merchantId = config.payHere.merchantId;
@@ -89,8 +89,25 @@ export class PayHereService {
       currency: 'LKR',
       merchantSecret,
     });
+    console.log({
+      sandbox: false,
+      merchant_id: merchantId,
+      first_name: user.firstName,
+      last_name: user.lastName,
+      email: user.email,
+      phone: user.phone,
+      address: [address1, address2].filter(Boolean).join(', '),
+      city,
+      country: 'LK',
+      order_id: orderId,
+      items: booking.salonService.name,
+      currency: 'LKR',
+      amount: booking.amount,
+      notify_url: notifyURL,
+      hash,
+    });
     return {
-      sandbox: true,
+      sandbox: false,
       merchant_id: merchantId,
       first_name: user.firstName,
       last_name: user.lastName,
@@ -129,19 +146,21 @@ export class PayHereService {
       );
     }
 
-    const localMd5Sig = this.generateCheckoutHash({
-      merchantId: merchant_id,
-      orderId: order_id,
-      amount: payhere_amount,
-      currency: payhere_currency,
-      merchantSecret,
-    });
-
+    const localMd5Sig = this.generateMd5Hash(
+      merchant_id +
+        order_id +
+        payhere_amount +
+        payhere_currency +
+        status_code +
+        this.generateMd5Hash(merchantSecret),
+    );
+    console.log('Computed MD5:', localMd5Sig, 'Received MD5:', md5sig);
     if (localMd5Sig !== md5sig) {
       throw new GenericError('Invalid signature', HttpStatus.BAD_REQUEST);
     }
 
-    const bookingId = order_id.split('-')[0];
+    const bookingId = order_id.split(':')[0];
+    console.log('Processing payment for booking ID:', bookingId);
     const booking = await this.bookingService.findById(bookingId);
     if (!booking) throw new Error('Booking not found');
     let paymentStatus: PaymentStatus;
@@ -167,11 +186,6 @@ export class PayHereService {
         booking.status = BookingStatus.CANCELLED;
     }
 
-    // Update booking with payment details
-    booking.payment_id = payment_id;
-    booking.status = BookingStatus.CONFIRMED;
-    await this.bookingService.update(booking.id, booking);
-
     const paymentDetails: Partial<PaymentDetails> = {
       id: payment_id,
       amount: Number(payhere_amount),
@@ -183,6 +197,11 @@ export class PayHereService {
     // Save payment details
     const payment = this.paymentDetailsRepository.create(paymentDetails);
     await this.paymentDetailsRepository.save(payment);
+
+    // Update booking with payment details
+    booking.payment_id = payment_id;
+    booking.status = BookingStatus.CONFIRMED;
+    await this.bookingService.update(booking.id, booking);
   }
 
   async refundBooking(bookingId: string, reason?: string) {

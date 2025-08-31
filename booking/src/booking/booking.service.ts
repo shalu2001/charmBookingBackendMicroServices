@@ -277,15 +277,38 @@ export class BookingService {
       where: { salon_id: salon.id, day_of_week: this.getDayOfWeek(date) },
     });
 
-    console.log(weeklyHours);
-
-    const salonOpenTime = weeklyHours?.open_time;
+    let salonOpenTime = weeklyHours?.open_time;
     const salonCloseTime = weeklyHours?.close_time;
 
     if (!salonOpenTime || !salonCloseTime) {
       throw new GenericError('Salon hours not found', HttpStatus.BAD_REQUEST);
     }
-
+    // If the date is today, set salon open time to current time if it's later than the scheduled open time
+    const today = new Date();
+    const inputDate = new Date(date);
+    if (
+      today.getFullYear() === inputDate.getFullYear() &&
+      today.getMonth() === inputDate.getMonth() &&
+      today.getDate() === inputDate.getDate()
+    ) {
+      // Round current time to the nearest 15-minute interval
+      const minutes = today.getMinutes();
+      const roundedMinutes = Math.ceil(minutes / 15) * 15;
+      let roundedHour = today.getHours();
+      let roundedMin = roundedMinutes;
+      if (roundedMinutes === 60) {
+        roundedHour += 1;
+        roundedMin = 0;
+      }
+      const now =
+        roundedHour.toString().padStart(2, '0') +
+        ':' +
+        roundedMin.toString().padStart(2, '0');
+      if (new TimeString(now).isAfter(new TimeString(salonOpenTime))) {
+        salonOpenTime = now;
+      }
+    }
+    console.log('salon open and close time:', salonOpenTime, salonCloseTime);
     const bookings = await this.bookingRepository.find({
       where: {
         worker_id: In(workerIds),
