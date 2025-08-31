@@ -63,4 +63,13 @@ export class BookingController {
     const pattern = { cmd: 'get_bookings' };
     return firstValueFrom(this.client.send(pattern, salonId));
   }
+
+  @Post('cancel/:bookingId')
+  async cancelBooking(
+    @Param('bookingId') bookingId: string,
+    @Body() data: { userId: string },
+  ): Promise<any> {
+    const pattern = { cmd: 'cancel_booking' };
+    return firstValueFrom(this.client.send(pattern, { ...data, bookingId }));
+  }
 }

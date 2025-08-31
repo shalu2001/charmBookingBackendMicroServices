@@ -19,6 +19,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, In } from 'typeorm';
 import { GetBookingsResponseDto } from './dto/bookingResponseDto';
+import { Cron } from '@nestjs/schedule';
 
 type Event = { t: TimeString; delta: number };
 
@@ -533,6 +534,25 @@ export class BookingService {
         booking.status === BookingStatus.CONFIRMED ? 'PAID' : 'PENDING',
     }));
   }
+
+  @Cron('0 * * * * *') // Runs every minute at second 0
+  async cancelPendingBookings() {
+    console.log('Checking for pending bookings to cancel...');
+    const now = new Date();
+    const bookings = await this.bookingRepository.find({
+      where: { status: BookingStatus.PENDING },
+    });
+    for (const booking of bookings) {
+      const created_at = new Date(booking.created_at);
+      const diffInHours =
+        (now.getTime() - created_at.getTime()) / (1000 * 60 * 60);
+      if (diffInHours > 1) {
+        booking.status = BookingStatus.CANCELLED;
+        await this.bookingRepository.save(booking);
+      }
+    }
+  }
+
   async useCancelBooking(bookingId: string, reason: string): Promise<void> {
     const booking = await this.bookingRepository.findOne({
       where: { id: bookingId },
@@ -573,5 +593,30 @@ export class BookingService {
 
     //TODO: Always give refund when salon cancelling
     //If u need time stuff use TimeString
+  }
+
+  //cancel bookings where payment didn't happen
+  async cancelPendingBooking(userId: string, bookingId: string): Promise<any> {
+    const booking = await this.bookingRepository.findOne({
+      where: { id: bookingId, user_id: userId },
+    });
+    console.log('booking to cancel:', booking);
+    if (!booking) {
+      throw new GenericError('Booking not found', HttpStatus.NOT_FOUND);
+    }
+
+    // Check if the booking can be canceled (e.g., not already completed)
+    if (booking.status === BookingStatus.COMPLETED) {
+      throw new GenericError(
+        'Cannot cancel completed booking',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+    // If payment didn't happen, cancel the booking
+    if (booking.status === 'PENDING') {
+      booking.status = BookingStatus.CANCELLED;
+      await this.bookingRepository.save(booking);
+      return { message: 'Booking cancelled successfully' };
+    }
   }
 }

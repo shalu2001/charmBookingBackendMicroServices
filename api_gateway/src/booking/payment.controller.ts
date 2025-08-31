@@ -29,7 +29,7 @@ export class PaymentsController {
 
   @Post('refund')
   async refundBooking(
-    @Body() data: { paymentId: string; reason: string },
+    @Body() data: { bookingId: string; reason: string },
   ): Promise<any> {
     const pattern = { cmd: 'refund_booking' };
     return firstValueFrom(this.client.send(pattern, data));

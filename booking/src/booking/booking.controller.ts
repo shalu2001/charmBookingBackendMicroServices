@@ -42,4 +42,16 @@ export class BookingController {
   async getBookings(salonId: string): Promise<any> {
     return this.bookingService.getBookings(salonId);
   }
+
+  @MessagePattern({ cmd: 'cancel_booking' })
+  async cancelBooking(data: {
+    bookingId: string;
+    userId: string;
+  }): Promise<any> {
+    console.log(data);
+    return this.bookingService.cancelPendingBooking(
+      data.userId,
+      data.bookingId,
+    );
+  }
 }

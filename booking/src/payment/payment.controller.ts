@@ -29,7 +29,7 @@ export class PaymentsController {
   }
 
   @MessagePattern({ cmd: 'refund_booking' })
-  async refundBooking(data: { paymentId: string; reason: string }) {
-    return this.payHereService.refundBooking(data.paymentId, data.reason);
+  async refundBooking(data: { bookingId: string; reason: string }) {
+    return this.payHereService.refundBooking(data.bookingId, data.reason);
   }
 }

@@ -11,6 +11,7 @@ import {
   SalonWorkerLeave,
   User,
 } from '@charmbooking/common';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import {
       SalonHoliday,
       User,
     ]),
+    ScheduleModule.forRoot(),
   ],
   controllers: [BookingController],
   providers: [BookingService],
