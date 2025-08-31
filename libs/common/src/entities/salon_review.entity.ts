@@ -5,8 +5,10 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  OneToOne,
 } from 'typeorm';
 import { User } from './user.entity';
+import { Booking } from './booking.entity';
 
 @Entity()
 export class SalonReview {
@@ -19,6 +21,13 @@ export class SalonReview {
   @ManyToOne(() => Salon, (salon) => salon.reviews)
   @JoinColumn({ name: 'salonId' })
   salon: Salon;
+
+  @Column()
+  bookingId: string;
+
+  @OneToOne(() => Booking, (booking) => booking.review)
+  @JoinColumn({ name: 'bookingId' })
+  booking: Booking;
 
   @Column()
   userId: string;

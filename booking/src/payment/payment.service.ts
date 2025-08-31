@@ -174,7 +174,6 @@ export class PayHereService {
 
     const paymentDetails: Partial<PaymentDetails> = {
       id: payment_id,
-      transaction_reference: payment_id,
       amount: Number(payhere_amount),
       status: paymentStatus,
       paid_at: new Date(),

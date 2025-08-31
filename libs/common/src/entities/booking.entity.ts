@@ -5,6 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
   CreateDateColumn,
+  OneToOne,
 } from 'typeorm';
 import { User } from './user.entity';
 import { Salon } from './salon.entity';
@@ -12,6 +13,7 @@ import { SalonService } from './salon_service.entity';
 import { PaymentDetails } from './payment_details.entity';
 import { BookingStatus } from '../enums/bookingStatus';
 import { SalonWorker } from './salon_worker.entity';
+import { SalonReview } from './salon_review.entity';
 
 @Entity('bookings')
 export class Booking {
@@ -77,4 +79,7 @@ export class Booking {
   })
   @JoinColumn({ name: 'worker_id' })
   worker: SalonWorker;
+
+  @OneToOne(() => SalonReview, (review) => review.booking)
+  review: SalonReview;
 }

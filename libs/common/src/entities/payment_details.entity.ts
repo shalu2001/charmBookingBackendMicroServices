@@ -4,11 +4,12 @@ import {
   Column,
   CreateDateColumn,
   PrimaryGeneratedColumn,
+  PrimaryColumn,
 } from 'typeorm';
 
 @Entity()
 export class PaymentDetails {
-  @PrimaryGeneratedColumn()
+  @PrimaryColumn()
   id: string;
 
   @Column({ type: 'varchar' })
@@ -22,9 +23,6 @@ export class PaymentDetails {
     enum: PaymentStatus,
   })
   status: PaymentStatus;
-
-  @Column({ type: 'varchar' })
-  transaction_reference: string;
 
   @Column({ type: 'timestamp', nullable: true })
   paid_at: Date;
