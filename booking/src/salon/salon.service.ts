@@ -55,7 +55,9 @@ export class SalonService {
     }
   }
   async findAll(): Promise<SalonResponseDTO[]> {
-    const salons = await this.salonRepository.find();
+    const salons = await this.salonRepository.find({
+      relations: ['services', 'images', 'reviews'],
+    });
     if (!salons || salons.length === 0) {
       throw new GenericError('No salons found', HttpStatus.NOT_FOUND);
     }
