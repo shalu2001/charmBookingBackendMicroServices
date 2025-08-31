@@ -23,3 +23,9 @@ export class UpdatePasswordDto {
   oldPassword: string;
   newPassword: string;
 }
+
+export class CreateReviewDto {
+  salonId: string;
+  rating: number;
+  comment: string;
+}

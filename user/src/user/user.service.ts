@@ -6,12 +6,20 @@ import * as bcrypt from 'bcrypt';
 import { RpcException } from '@nestjs/microservices';
 import { JwtService } from '@nestjs/jwt';
 import {
+  CreateReviewDto,
   LoginUserResponseDTO,
   UpdatePasswordDto,
   UserDetailsDTO,
 } from 'src/dto/userDTO';
 import { LoginUserDto } from 'src/dto/userDTO';
-import { Booking, GenericError, User, UserRole } from '@charmbooking/common';
+import {
+  Booking,
+  GenericError,
+  User,
+  UserRole,
+  SalonReview,
+  BookingStatus,
+} from '@charmbooking/common';
 
 @Injectable()
 export class UserService {
@@ -21,6 +29,8 @@ export class UserService {
     private jwtService: JwtService,
     @InjectRepository(Booking)
     private bookingRepository: Repository<Booking>,
+    @InjectRepository(SalonReview)
+    private salonReviewRepository: Repository<SalonReview>,
   ) {}
 
   async getUserById(userId: string): Promise<UserDetailsDTO> {
@@ -189,5 +199,32 @@ export class UserService {
       serviceName: booking.salonService?.name || null,
       salonName: booking.salon?.name || null,
     }));
+  }
+
+  async addReviewToBooking(
+    userId: string,
+    bookingId: string,
+    reviewDto: CreateReviewDto,
+  ): Promise<SalonReview> {
+    const booking = await this.bookingRepository.findOne({
+      where: {
+        id: bookingId,
+        user_id: userId,
+        status: BookingStatus.COMPLETED,
+      },
+    });
+    if (!booking) {
+      throw new GenericError(
+        'Booking not found or you do not have permission to review it',
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    const review = this.salonReviewRepository.create({
+      ...reviewDto,
+      userId: userId,
+      bookingId: booking.id,
+    });
+    return this.salonReviewRepository.save(review);
   }
 }
