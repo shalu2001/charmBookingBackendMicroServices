@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { CreateUserDto } from 'src/dto/createUserDTO';
 import * as bcrypt from 'bcrypt';
 import { RpcException } from '@nestjs/microservices';
@@ -174,7 +174,10 @@ export class UserService {
 
   async getUserBookingsById(userId: string): Promise<any> {
     const bookings = await this.bookingRepository.find({
-      where: { user_id: userId },
+      where: {
+        user_id: userId,
+        //booking_date: In([new Date().toISOString().split('T')[0]]),
+      },
       relations: ['salonService', 'salon'],
     });
     if (!bookings || bookings.length === 0) {

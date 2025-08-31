@@ -506,7 +506,9 @@ export class BookingService {
 
   async getBookings(salonId: string): Promise<GetBookingsResponseDto[]> {
     const bookings = await this.bookingRepository.find({
-      where: { salon_id: salonId },
+      where: {
+        salon_id: salonId,
+      },
       relations: ['user', 'salonService', 'worker'],
       order: {
         created_at: 'DESC', // Order by creation date, newest first
@@ -517,6 +519,7 @@ export class BookingService {
 
     return bookings.map((booking, index) => ({
       id: (index + 1).toString(), // Sequential number starting from 1
+      bookingId: booking.id,
       customerId: booking.user_id,
       customerName: `${booking.user?.firstName} ${booking.user?.lastName}`,
       customerEmail: booking.user?.email,
@@ -553,7 +556,8 @@ export class BookingService {
     }
   }
 
-  async useCancelBooking(bookingId: string, reason: string): Promise<void> {
+  async userCancelBooking(bookingId: string, reason: string): Promise<any> {
+    console.log('Cancelling booking:', bookingId);
     const booking = await this.bookingRepository.findOne({
       where: { id: bookingId },
       relations: ['user', 'salonService', 'worker'],
@@ -569,12 +573,33 @@ export class BookingService {
         HttpStatus.BAD_REQUEST,
       );
     }
-
-    //TODO: Get the current date, check if current date is less than 24 hours from booking date, no refund else send refund request to payHere service
-    //If u need time stuff use TimeString
+    if (booking.status === BookingStatus.CONFIRMED) {
+      booking.status = BookingStatus.CANCELLED;
+      await this.bookingRepository.save(booking);
+    }
+    const currentDateAndTime = new Date();
+    const bookingDate = new Date(booking.booking_date);
+    const timeDiff = bookingDate.getTime() - currentDateAndTime.getTime();
+    const diffInHours = timeDiff / (1000 * 60 * 60);
+    if (diffInHours < 24) {
+      // If less than 24 hours, no refund
+      return {
+        refund: false,
+        refund_amount: 0,
+      };
+    } else {
+      // If more than 24 hours, process refund
+      const refundAmount = booking.amount;
+      //TODO: Send refund request to payHere service
+      //If u need time stuff use TimeString
+      return {
+        refund: true,
+        refund_amount: refundAmount,
+      };
+    }
   }
 
-  async salonCancelBooking(bookingId: string, reason: string): Promise<void> {
+  async salonCancelBooking(bookingId: string): Promise<any> {
     const booking = await this.bookingRepository.findOne({
       where: { id: bookingId },
       relations: ['user', 'salonService', 'worker'],
@@ -582,7 +607,6 @@ export class BookingService {
     if (!booking) {
       throw new GenericError('Booking not found', HttpStatus.NOT_FOUND);
     }
-
     // Check if the booking can be canceled (e.g., not already completed)
     if (booking.status === BookingStatus.COMPLETED) {
       throw new GenericError(
@@ -590,6 +614,15 @@ export class BookingService {
         HttpStatus.BAD_REQUEST,
       );
     }
+    if (booking.status === BookingStatus.CONFIRMED) {
+      booking.status = BookingStatus.CANCELLED;
+      await this.bookingRepository.save(booking);
+    }
+    const refundAmount = booking.amount;
+    return {
+      refund: true,
+      refund_amount: refundAmount,
+    };
 
     //TODO: Always give refund when salon cancelling
     //If u need time stuff use TimeString
@@ -617,6 +650,20 @@ export class BookingService {
       booking.status = BookingStatus.CANCELLED;
       await this.bookingRepository.save(booking);
       return { message: 'Booking cancelled successfully' };
+    }
+  }
+
+  async updateCompletedBookingStatus(bookingId: string): Promise<any> {
+    const booking = await this.bookingRepository.findOne({
+      where: { id: bookingId },
+    });
+    if (!booking) {
+      throw new GenericError('Booking not found', HttpStatus.NOT_FOUND);
+    }
+    if (booking.status === BookingStatus.CONFIRMED) {
+      booking.status = BookingStatus.COMPLETED;
+      await this.bookingRepository.save(booking);
+      return { message: 'Booking status updated to completed' };
     }
   }
 }

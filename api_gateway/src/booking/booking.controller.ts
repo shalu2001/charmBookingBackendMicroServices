@@ -72,4 +72,30 @@ export class BookingController {
     const pattern = { cmd: 'cancel_booking' };
     return firstValueFrom(this.client.send(pattern, { ...data, bookingId }));
   }
+
+  @Post('salonCancel/:bookingId')
+  async salonCancelBooking(
+    @Param('bookingId') bookingId: string,
+    @Body() data: { salonId: string },
+  ): Promise<any> {
+    const pattern = { cmd: 'salon_cancel_booking' };
+    return firstValueFrom(this.client.send(pattern, { ...data, bookingId }));
+  }
+
+  @Post('userCancel/:bookingId')
+  async userCancelBooking(
+    @Param('bookingId') bookingId: string,
+    @Body() data: { userId: string; reason: string },
+  ): Promise<any> {
+    const pattern = { cmd: 'user_cancel_booking' };
+    return firstValueFrom(this.client.send(pattern, { ...data, bookingId }));
+  }
+
+  @Post('updateCompletedBookingStatus/:bookingId')
+  async updateCompletedBookingStatus(
+    @Param('bookingId') bookingId: string,
+  ): Promise<any> {
+    const pattern = { cmd: 'update_completed_booking_status' };
+    return firstValueFrom(this.client.send(pattern, { bookingId }));
+  }
 }

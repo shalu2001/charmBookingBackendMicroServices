@@ -54,4 +54,26 @@ export class BookingController {
       data.bookingId,
     );
   }
+
+  @MessagePattern({ cmd: 'salon_cancel_booking' })
+  async salonCancelBooking(data: { bookingId: string }): Promise<any> {
+    console.log(data);
+    return this.bookingService.salonCancelBooking(data.bookingId);
+  }
+
+  @MessagePattern({ cmd: 'user_cancel_booking' })
+  async userCancelBooking(data: {
+    bookingId: string;
+    userId: string;
+    reason: string;
+  }): Promise<any> {
+    console.log(data);
+    return this.bookingService.userCancelBooking(data.bookingId, data.reason);
+  }
+
+  @MessagePattern({ cmd: 'update_completed_booking_status' })
+  async updateCompletedBookingStatus(bookingId: string): Promise<any> {
+    console.log(bookingId);
+    return this.bookingService.updateCompletedBookingStatus(bookingId);
+  }
 }
