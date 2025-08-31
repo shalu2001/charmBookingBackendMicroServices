@@ -32,6 +32,27 @@ export class SalonWorkerController {
     );
   }
 
+  @Post('/:salonId/addWorkerLeave/:workerId')
+  async addWorkerLeave(
+    @Param('salonId') salonId: UUID,
+    @Param('workerId') workerId: UUID,
+    @Body() leaveInputs: { date: Date; startTime: string; endTime: string }[],
+  ): Promise<any> {
+    return firstValueFrom(
+      this.client.send(
+        { cmd: 'add_salon_worker_leave' },
+        { salonId, workerId, leaveInputs },
+      ),
+    );
+  }
+
+  @Get('/:salonId/getWorkersLeaves')
+  async getWorkersLeaves(@Param('salonId') salonId: UUID): Promise<any> {
+    return firstValueFrom(
+      this.client.send({ cmd: 'get_salon_workers_leaves' }, salonId),
+    );
+  }
+
   //   @Post(':id')
   //   async update(@Param('id') id: string, @Body() updateSalonWorkerDto: any) {
   //     return firstValueFrom(this.client.send({ cmd: 'update_salon_worker' }, { id, ...updateSalonWorkerDto }));

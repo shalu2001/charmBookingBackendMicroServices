@@ -12,7 +12,7 @@ export class SalonWorkerController {
     return this.salonWorkerService.createSalonWorker(data);
   }
 
-  @MessagePattern({ cmd: 'get_salon_workers' })
+  @MessagePattern({ cmd: 'get_salon_worker' })
   async getSalonWorker(salonId: UUID): Promise<any> {
     return this.salonWorkerService.getSalonWorker(salonId);
   }
@@ -33,13 +33,20 @@ export class SalonWorkerController {
     return this.salonWorkerService.getSalonWorkerLeaves(salonId, workerId);
   }
 
+  @MessagePattern({ cmd: 'get_salon_workers_leaves' })
+  async getSalonWorkersLeaves(salonId: UUID): Promise<any> {
+    return this.salonWorkerService.getSalonWorkersLeaves(salonId);
+  }
+
   @MessagePattern({ cmd: 'add_salon_worker_leave' })
-  async addSalonWorkerLeave(
-    salonId: UUID,
-    workerId: UUID,
-    data: any,
-  ): Promise<any> {
-    return this.salonWorkerService.addSalonWorkerLeave(salonId, workerId, data);
+  async addSalonWorkerLeave(data: any): Promise<any> {
+    console.log('Received data for leave:', data);
+    const { salonId, workerId, leaveInputs } = data;
+    return this.salonWorkerService.addSalonWorkerLeave(
+      salonId,
+      workerId,
+      leaveInputs.leaveInputs || leaveInputs,
+    );
   }
 
   @MessagePattern({ cmd: 'update_salon_worker' })

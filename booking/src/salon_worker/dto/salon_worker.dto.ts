@@ -3,3 +3,9 @@ export class CreateSalonWorkerDto {
   salonId: string;
   services: string[];
 }
+
+export class SalonWorkerLeaveDto {
+  date: string;
+  startTime: string;
+  endTime: string;
+}
