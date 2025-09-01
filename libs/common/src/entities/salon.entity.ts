@@ -1,15 +1,9 @@
 import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
-import {
-  IsLatitude,
-  IsLongitude,
-  IsEmail,
-  IsHash,
-  MinLength,
-  MaxLength,
-} from 'class-validator';
+import { IsLatitude, IsLongitude, IsEmail } from 'class-validator';
 import { SalonReview } from './salon_review.entity';
 import { SalonImage } from './salon_images.entity';
 import { SalonService } from './salon_service.entity';
+import { VerificationStatus } from '../enums';
 @Entity()
 export class Salon {
   @PrimaryGeneratedColumn('uuid')
@@ -41,6 +35,13 @@ export class Salon {
   @Column('decimal', { precision: 10, scale: 8 })
   @IsLatitude()
   latitude: number;
+
+  @Column({
+    type: 'enum',
+    enum: VerificationStatus,
+    default: VerificationStatus.PENDING,
+  })
+  verificationStatus: VerificationStatus;
 
   @OneToMany(() => SalonService, (service) => service.salon)
   services: SalonService[];

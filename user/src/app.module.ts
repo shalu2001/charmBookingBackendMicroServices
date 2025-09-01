@@ -4,6 +4,7 @@ import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { ConfigModule } from '@nestjs/config';
 import { CommonModule } from '@charmbooking/common';
+import { SuperAdminModule } from './super-admin/super-admin.module';
 
 @Module({
   imports: [
@@ -12,6 +13,7 @@ import { CommonModule } from '@charmbooking/common';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    SuperAdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

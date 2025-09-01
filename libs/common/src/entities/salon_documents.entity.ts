@@ -4,13 +4,15 @@ import {
   PrimaryGeneratedColumn,
   ManyToOne,
   JoinColumn,
+  CreateDateColumn,
 } from 'typeorm';
 import { Salon } from './salon.entity';
+import { SalonDocumentType } from '../enums';
 
 @Entity()
-export class SalonImage {
-  @PrimaryGeneratedColumn()
-  id: number;
+export class SalonDocuments {
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column()
   salonId: string;
@@ -22,6 +24,9 @@ export class SalonImage {
   @Column({ length: 255 })
   url: string;
 
-  @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
+  @Column({ type: 'enum', enum: SalonDocumentType })
+  documentType: SalonDocumentType;
+
+  @CreateDateColumn()
   createdAt: Date;
 }

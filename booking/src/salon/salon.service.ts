@@ -12,8 +12,11 @@ import {
   UserRole,
   SalonWeeklyHours,
   SalonReview,
-  SalonService as SalonServiceEntity,
   ServiceWithAvailability,
+  SalonSubmitDetailsRequestDto,
+  SalonDetails,
+  SalonDocuments,
+  SalonDocumentType,
 } from '@charmbooking/common';
 import {
   SalonRegisterDTO,
@@ -41,6 +44,10 @@ export class SalonService {
     private readonly weeklyHoursRepository: Repository<SalonWeeklyHours>,
     @InjectRepository(SalonReview)
     private readonly salonReviewRepository: Repository<SalonReview>,
+    @InjectRepository(SalonDetails)
+    private readonly salonDetailsRepository: Repository<SalonDetails>,
+    @InjectRepository(SalonDocuments)
+    private readonly salonDocumentsRepository: Repository<SalonDocuments>,
   ) {}
 
   private async checkSalonExists(email: string): Promise<void> {
@@ -251,7 +258,7 @@ export class SalonService {
       const baseUrl = `http://localhost:${getConfig().services.apiGateway.port}`;
       const salonImages = images.map((image) => ({
         url: `${baseUrl}/uploads/${image.filename}`,
-        salonId: Number(savedSalon.id),
+        salonId: savedSalon.id,
         salon: savedSalon,
       }));
       await this.salonImageRepository.save(salonImages);
@@ -408,5 +415,41 @@ export class SalonService {
       where: { salon_id: salonID },
     });
     return weeklyHours;
+  }
+
+  async submitSalonDetails(
+    request: SalonSubmitDetailsRequestDto<Express.Multer.File>,
+  ): Promise<void> {
+    const { salonId, details, documents } = request;
+
+    await this.salonDetailsRepository.manager.transaction(
+      async (transactionalEntityManager) => {
+        // Save salon details
+        const salonDetails = this.salonDetailsRepository.create({
+          salonId: salonId,
+          ...details,
+        });
+        await transactionalEntityManager.save(SalonDetails, salonDetails);
+
+        // Save salon documents
+        if (documents) {
+          const baseUrl = `http://localhost:${getConfig().services.apiGateway.port}`;
+          const documentEntries = Object.entries(documents);
+          const salonDocumentsArr = documentEntries
+            .filter(([, file]) => !!file)
+            .map(([type, file]) => ({
+              salonId: salonId,
+              documentType: Number(type) as unknown as SalonDocumentType,
+              url: `${baseUrl}/uploads/${file.filename}`,
+            }));
+          if (salonDocumentsArr.length > 0) {
+            await transactionalEntityManager.save(
+              SalonDocuments,
+              salonDocumentsArr,
+            );
+          }
+        }
+      },
+    );
   }
 }
