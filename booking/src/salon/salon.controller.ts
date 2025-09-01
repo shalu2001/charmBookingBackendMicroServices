@@ -6,7 +6,11 @@ import {
   SalonReviewRequestDto,
   SalonWeeklyHoursDTO,
 } from 'src/dto/salonResponse';
-import { SalonRankedRequestDto, SalonWithRank } from '@charmbooking/common';
+import {
+  SalonRankedRequestDto,
+  SalonSubmitDetailsRequestDto,
+  SalonWithRank,
+} from '@charmbooking/common';
 
 @Controller('salon')
 export class SalonController {
@@ -94,6 +98,16 @@ export class SalonController {
   @MessagePattern({ cmd: 'get_salon_weekly_hours' })
   async getSalonWeeklyHours(salonID: string): Promise<any> {
     const result = await this.salonService.getSalonWeeklyHours(salonID);
+    return result;
+  }
+
+  @MessagePattern({ cmd: 'submit_salon_details' })
+  async submitSalonDetails({
+    request,
+  }: {
+    request: SalonSubmitDetailsRequestDto<Express.Multer.File>;
+  }) {
+    const result = await this.salonService.submitSalonDetails(request);
     return result;
   }
 }

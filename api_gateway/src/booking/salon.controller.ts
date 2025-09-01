@@ -1,4 +1,8 @@
-import { SalonRankedRequestDto } from '@charmbooking/common';
+import {
+  SalonDocumentType,
+  SalonRankedRequestDto,
+  SalonSubmitDetailsRequestDto,
+} from '@charmbooking/common';
 import {
   Body,
   Controller,
@@ -12,9 +16,15 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import {
+  FileFieldsInterceptor,
+  FilesInterceptor,
+} from '@nestjs/platform-express';
 import { firstValueFrom } from 'rxjs';
-import { multerConfig } from 'src/file-upload/multer.config';
+import {
+  multerConfig,
+  salonDocumentsMulterConfig,
+} from 'src/file-upload/multer.config';
 
 @Controller('salon')
 export class SalonController {
@@ -123,5 +133,31 @@ export class SalonController {
   async getSalonWeeklyHours(@Param('id') salonID: string): Promise<any> {
     const pattern = { cmd: 'get_salon_weekly_hours' };
     return firstValueFrom(this.client.send<any>(pattern, salonID));
+  }
+
+  @Post('submitSalonDetails')
+  @UseInterceptors(
+    FileFieldsInterceptor(
+      [
+        { name: SalonDocumentType.ID_PROOF, maxCount: 1 },
+        { name: SalonDocumentType.BANKING_PROOF, maxCount: 1 },
+        { name: SalonDocumentType.COMPANY_REGISTRATION, maxCount: 1 },
+      ],
+      salonDocumentsMulterConfig,
+    ),
+  )
+  async submitSalonDetails(
+    @Body() request: SalonSubmitDetailsRequestDto<Express.Multer.File>,
+    @UploadedFiles() documents: { [key: string]: Express.Multer.File[] },
+  ): Promise<any> {
+    const pattern = { cmd: 'submit_salon_details' };
+    // Convert arrays to single file (first element) for each document type
+    const singleFiles: { [key: string]: Express.Multer.File | undefined } = {};
+    Object.keys(documents).forEach((key) => {
+      singleFiles[key] = documents[key]?.[0];
+    });
+    return firstValueFrom(
+      this.client.send<any>(pattern, { ...request, files: singleFiles }),
+    );
   }
 }

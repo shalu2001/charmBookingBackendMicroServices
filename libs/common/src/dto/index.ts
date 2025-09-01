@@ -1,5 +1,6 @@
 import { SalonWorker } from '../entities/salon_worker.entity';
 import { SalonService } from '../entities/salon_service.entity';
+import { SalonDocumentType } from '../enums';
 
 export interface CheckServiceTimeAvailabilityDto {
   salonId: string;
@@ -98,4 +99,30 @@ export interface PayHerePayload {
   currency: string; // Currency Code (LKR/USD)
   amount: number; // Total Payment Amount
   hash: string; // Generated hash value
+}
+
+export interface LoginSuperAdminDto {
+  username: string;
+  password: string;
+}
+
+export interface LoginSuperAdminResponseDTO {
+  username: string;
+  token: string;
+}
+
+export interface SalonSubmitDetailsRequestDto<T> {
+  salonId: string;
+  details: {
+    owner_nic: string;
+    bank_account_full_name: string;
+    bank_account_number: string;
+    bank_name: string;
+    bank_branch: string;
+  };
+  documents: {
+    [SalonDocumentType.ID_PROOF]: T;
+    [SalonDocumentType.BANKING_PROOF]: T;
+    [SalonDocumentType.COMPANY_REGISTRATION]: T;
+  };
 }
