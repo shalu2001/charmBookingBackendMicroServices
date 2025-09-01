@@ -5,6 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import {
   Salon,
   SalonAdmin,
+  SalonDetails,
+  SalonDocuments,
   SalonImage,
   SalonReview,
   SalonWeeklyHours,
@@ -12,8 +14,7 @@ import {
 import { JwtModule } from '@nestjs/jwt/dist/jwt.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getConfig } from '@charmbooking/common';
-import { BookingService } from 'src/booking/booking.service';
-import { BookingModule } from 'src/booking/booking.module';
+import { BookingModule } from '../booking/booking.module';
 
 const config = getConfig();
 @Module({
@@ -25,6 +26,8 @@ const config = getConfig();
       SalonAdmin,
       SalonWeeklyHours,
       SalonReview,
+      SalonDetails,
+      SalonDocuments,
     ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],
