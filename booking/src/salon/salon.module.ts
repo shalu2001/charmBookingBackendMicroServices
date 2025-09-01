@@ -15,6 +15,7 @@ import { JwtModule } from '@nestjs/jwt/dist/jwt.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { getConfig } from '@charmbooking/common';
 import { BookingModule } from '../booking/booking.module';
+import { SalonVerifiedRepository } from './salon_verified.repository';
 
 const config = getConfig();
 @Module({
@@ -39,6 +40,6 @@ const config = getConfig();
     }),
   ],
   controllers: [SalonController],
-  providers: [SalonService],
+  providers: [SalonService, SalonVerifiedRepository],
 })
 export class SalonModule {}

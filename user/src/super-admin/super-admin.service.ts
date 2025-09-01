@@ -54,10 +54,18 @@ export class SuperAdminService {
     };
   }
 
+  async getAllSalons(): Promise<Salon[]> {
+    return this.salonRepository.find();
+  }
+
   async getSalonDocuments(salonId: string): Promise<SalonDocuments[]> {
-    return this.salonDocumentsRepository.find({
+    const documents = await this.salonDocumentsRepository.find({
       where: { salon: { id: salonId } },
     });
+    if (!documents || documents.length === 0) {
+      throw new GenericError('No salon documents found', 404);
+    }
+    return documents;
   }
 
   async getSalonDetails(salonId: string): Promise<SalonDetails> {

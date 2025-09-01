@@ -28,12 +28,12 @@ import { GenericError } from '@charmbooking/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { BookingService } from 'src/booking/booking.service';
+import { SalonVerifiedRepository } from './salon_verified.repository';
 
 @Injectable()
 export class SalonService {
   constructor(
-    @InjectRepository(Salon)
-    private salonRepository: Repository<Salon>,
+    private salonRepository: SalonVerifiedRepository,
     @InjectRepository(SalonImage)
     private salonImageRepository: Repository<SalonImage>,
     private jwtService: JwtService,
@@ -419,7 +419,8 @@ export class SalonService {
 
   async submitSalonDetails(
     request: SalonSubmitDetailsRequestDto<Express.Multer.File>,
-  ): Promise<void> {
+  ): Promise<{ success: boolean }> {
+    console.log('Incoming:', request);
     const { salonId, details, documents } = request;
 
     await this.salonDetailsRepository.manager.transaction(
@@ -439,7 +440,7 @@ export class SalonService {
             .filter(([, file]) => !!file)
             .map(([type, file]) => ({
               salonId: salonId,
-              documentType: Number(type) as unknown as SalonDocumentType,
+              documentType: type as SalonDocumentType,
               url: `${baseUrl}/uploads/${file.filename}`,
             }));
           if (salonDocumentsArr.length > 0) {
@@ -451,5 +452,6 @@ export class SalonService {
         }
       },
     );
+    return { success: true };
   }
 }

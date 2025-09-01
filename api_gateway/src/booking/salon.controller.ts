@@ -147,17 +147,27 @@ export class SalonController {
     ),
   )
   async submitSalonDetails(
-    @Body() request: SalonSubmitDetailsRequestDto<Express.Multer.File>,
+    @Body()
+    request: SalonSubmitDetailsRequestDto<Express.Multer.File>,
     @UploadedFiles() documents: { [key: string]: Express.Multer.File[] },
   ): Promise<any> {
     const pattern = { cmd: 'submit_salon_details' };
-    // Convert arrays to single file (first element) for each document type
     const singleFiles: { [key: string]: Express.Multer.File | undefined } = {};
     Object.keys(documents).forEach((key) => {
       singleFiles[key] = documents[key]?.[0];
     });
+    const { salonId, ...details } = request;
+    console.log('Submitting salon details with data:', {
+      salonId,
+      details,
+      documents: { ...singleFiles },
+    });
     return firstValueFrom(
-      this.client.send<any>(pattern, { ...request, files: singleFiles }),
+      this.client.send<any>(pattern, {
+        salonId,
+        details,
+        documents: { ...singleFiles },
+      }),
     );
   }
 }

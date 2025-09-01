@@ -12,6 +12,11 @@ export class SuperAdminController {
     return this.superAdminService.login(loginUserDto);
   }
 
+  @MessagePattern({ cmd: 'get_all_salons' })
+  async getAllSalons(): Promise<any> {
+    return this.superAdminService.getAllSalons();
+  }
+
   @MessagePattern({ cmd: 'get_salon_documents' })
   async getSalonDocuments(salonId: string): Promise<any> {
     return this.superAdminService.getSalonDocuments(salonId);

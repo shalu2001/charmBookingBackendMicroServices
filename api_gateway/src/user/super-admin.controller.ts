@@ -14,6 +14,13 @@ export class SuperAdminController {
     );
   }
 
+  @Get('all-salons')
+  async getAllSalons(): Promise<any> {
+    return await firstValueFrom(
+      this.client.send({ cmd: 'get_all_salons' }, {}),
+    );
+  }
+
   @Get('salon-documents/:salonId')
   async getSalonDocuments(@Param('salonId') salonId: string): Promise<any> {
     return await firstValueFrom(

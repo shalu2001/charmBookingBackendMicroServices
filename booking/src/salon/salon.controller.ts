@@ -102,11 +102,9 @@ export class SalonController {
   }
 
   @MessagePattern({ cmd: 'submit_salon_details' })
-  async submitSalonDetails({
-    request,
-  }: {
-    request: SalonSubmitDetailsRequestDto<Express.Multer.File>;
-  }) {
+  async submitSalonDetails(
+    request: SalonSubmitDetailsRequestDto<Express.Multer.File>,
+  ) {
     const result = await this.salonService.submitSalonDetails(request);
     return result;
   }
