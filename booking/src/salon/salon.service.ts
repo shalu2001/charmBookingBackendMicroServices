@@ -17,6 +17,7 @@ import {
   SalonDetails,
   SalonDocuments,
   SalonDocumentType,
+  VerificationStatus,
 } from '@charmbooking/common';
 import {
   SalonRegisterDTO,
@@ -28,12 +29,13 @@ import { GenericError } from '@charmbooking/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { BookingService } from 'src/booking/booking.service';
-import { SalonVerifiedRepository } from './salon_verified.repository';
+// import { SalonVerifiedRepository } from './salon_verified.repository';
 
 @Injectable()
 export class SalonService {
   constructor(
-    private salonRepository: SalonVerifiedRepository,
+    @InjectRepository(Salon)
+    private salonRepository: Repository<Salon>,
     @InjectRepository(SalonImage)
     private salonImageRepository: Repository<SalonImage>,
     private jwtService: JwtService,
@@ -63,6 +65,7 @@ export class SalonService {
   }
   async findAll(): Promise<SalonResponseDTO[]> {
     const salons = await this.salonRepository.find({
+      where: { verificationStatus: VerificationStatus.VERIFIED },
       relations: ['services', 'images', 'reviews'],
     });
     if (!salons || salons.length === 0) {
@@ -79,6 +82,7 @@ export class SalonService {
     time,
   }: SalonRankedRequestDto): Promise<SalonWithRank[]> {
     const allSalons = await this.salonRepository.find({
+      where: { verificationStatus: VerificationStatus.VERIFIED },
       relations: ['services', 'services.categories', 'reviews', 'images'],
     });
 
