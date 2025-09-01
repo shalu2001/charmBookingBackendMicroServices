@@ -1,6 +1,6 @@
 import { SalonWorker } from '../entities/salon_worker.entity';
 import { SalonService } from '../entities/salon_service.entity';
-import { SalonDocumentType } from 'src/enums';
+import { SalonDocumentType } from '../enums';
 
 export interface CheckServiceTimeAvailabilityDto {
   salonId: string;
