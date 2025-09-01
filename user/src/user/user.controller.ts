@@ -3,6 +3,7 @@ import { UserService } from './user.service';
 import { MessagePattern } from '@nestjs/microservices';
 import { CreateUserDto } from 'src/dto/createUserDTO';
 import {
+  CreateReviewDto,
   LoginUserDto,
   UpdatePasswordDto,
   UserDetailsDTO,
@@ -49,5 +50,18 @@ export class UserController {
   @MessagePattern({ cmd: 'get_user_bookings_by_id' })
   async getUserBookingsById(userId: string): Promise<any> {
     return this.userService.getUserBookingsById(userId);
+  }
+
+  @MessagePattern({ cmd: 'create_review' })
+  async createReview(data: {
+    userId: string;
+    bookingId: string;
+    reviewDto: CreateReviewDto;
+  }): Promise<any> {
+    return this.userService.addReviewToBooking(
+      data.userId,
+      data.bookingId,
+      data.reviewDto,
+    );
   }
 }

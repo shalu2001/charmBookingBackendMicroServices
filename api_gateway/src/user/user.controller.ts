@@ -66,4 +66,18 @@ export class UserController {
       this.client.send({ cmd: 'get_user_bookings_by_id' }, id),
     );
   }
+
+  @Post(':userId/createReview/:bookingId')
+  async createReview(
+    @Param('userId') userId: string,
+    @Param('bookingId') bookingId: string,
+    @Body() reviewDto: any,
+  ): Promise<any> {
+    return await firstValueFrom(
+      this.client.send(
+        { cmd: 'create_review' },
+        { userId, bookingId, reviewDto },
+      ),
+    );
+  }
 }

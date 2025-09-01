@@ -614,10 +614,12 @@ export class BookingService {
         HttpStatus.BAD_REQUEST,
       );
     }
-    if (booking.status === BookingStatus.CONFIRMED) {
-      booking.status = BookingStatus.CANCELLED;
-      await this.bookingRepository.save(booking);
-    }
+    // const currentDateAndTime = new Date();
+    // if (booking.start_time < currentDateAndTime) {
+    //   // If the booking start time is in the past, we can cancel it
+    //   booking.status = BookingStatus.CANCELLED;
+    //   await this.bookingRepository.save(booking);
+    // }
     const refundAmount = booking.amount;
     return {
       refund: true,
@@ -654,9 +656,11 @@ export class BookingService {
   }
 
   async updateCompletedBookingStatus(bookingId: string): Promise<any> {
+    console.log('fetched bookingid from the service :', bookingId);
     const booking = await this.bookingRepository.findOne({
       where: { id: bookingId },
     });
+    console.log('Booking found:', booking);
     if (!booking) {
       throw new GenericError('Booking not found', HttpStatus.NOT_FOUND);
     }

@@ -72,8 +72,10 @@ export class BookingController {
   }
 
   @MessagePattern({ cmd: 'update_completed_booking_status' })
-  async updateCompletedBookingStatus(bookingId: string): Promise<any> {
-    console.log(bookingId);
-    return this.bookingService.updateCompletedBookingStatus(bookingId);
+  async updateCompletedBookingStatus(data: {
+    bookingId: string;
+  }): Promise<any> {
+    console.log(data.bookingId);
+    return this.bookingService.updateCompletedBookingStatus(data.bookingId);
   }
 }
