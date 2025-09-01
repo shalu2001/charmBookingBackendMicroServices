@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MoreThanOrEqual, Repository } from 'typeorm';
+import { In, MoreThanOrEqual, Not, Repository } from 'typeorm';
 import {
   GenericError,
   Salon,
@@ -8,6 +8,7 @@ import {
   SalonWorker,
   SalonWorkerLeave,
   SalonHoliday,
+  Booking,
 } from '@charmbooking/common';
 import {
   CreateSalonWorkerDto,
@@ -26,6 +27,8 @@ export class SalonWorkerService {
     private salonWorkerLeaveRepository: Repository<SalonWorkerLeave>,
     @InjectRepository(SalonHoliday)
     private salonHolidayRepository: Repository<SalonHoliday>,
+    @InjectRepository(Booking)
+    private bookingRepository: Repository<Booking>,
   ) {}
 
   async createSalonWorker(data: CreateSalonWorkerDto): Promise<SalonWorker> {
@@ -114,7 +117,6 @@ export class SalonWorkerService {
     workerId: UUID,
     leaveInputs: { date: string; startTime: string; endTime: string }[],
   ): Promise<any> {
-    // Extract just the salonId and workerId for the query
     const worker = await this.salonWorkerRepository.findOne({
       where: {
         workerId,
@@ -128,12 +130,41 @@ export class SalonWorkerService {
 
     const savedLeaves: SalonWorkerLeave[] = [];
 
-    // Save each leave date as a separate SalonWorkerLeave record
     for (const leave of leaveInputs) {
       const dateStr =
         typeof leave.date === 'string'
           ? leave.date
           : new Date(leave.date).toISOString().split('T')[0];
+
+      // Check for existing bookings in the time period
+      const existingBookings = await this.bookingRepository
+        .createQueryBuilder('booking')
+        .where('booking.worker_id = :workerId', { workerId })
+        .andWhere('booking.booking_date = :dateStr', { dateStr })
+        .andWhere('booking.status NOT IN (:...statuses)', {
+          statuses: ['CANCELLED', 'COMPLETED'],
+        })
+        .andWhere(
+          `
+          (
+            TIME(booking.start_time) < :leaveEnd
+            AND
+            ADDTIME(booking.start_time, SEC_TO_TIME(booking.duration * 60)) > :leaveStart
+          )
+        `,
+          {
+            leaveStart: leave.startTime,
+            leaveEnd: leave.endTime,
+          },
+        )
+        .getMany();
+
+      if (existingBookings.length > 0) {
+        throw new GenericError(
+          `Worker has existing bookings on ${dateStr} between ${leave.startTime} and ${leave.endTime}`,
+          HttpStatus.CONFLICT,
+        );
+      }
 
       const leaveEntity = this.salonWorkerLeaveRepository.create({
         workerId: workerId,

@@ -1,4 +1,5 @@
 import {
+  Booking,
   Salon,
   SalonHoliday,
   SalonService,
@@ -18,6 +19,7 @@ import { SalonWorkerService } from './salon_worker.service';
       SalonWorker,
       SalonWorkerLeave,
       SalonHoliday,
+      Booking,
     ]),
   ],
   controllers: [SalonWorkerController],
