@@ -1,7 +1,16 @@
 import { LoginSuperAdminDto } from '@charmbooking/common';
-import { Controller, Post, Inject, Body, Get, Param } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Inject,
+  Body,
+  Get,
+  Param,
+  UseGuards,
+} from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
+import { SuperAdminGuard } from 'src/auth/auth.guard';
 
 @Controller('super-admin')
 export class SuperAdminController {
@@ -14,6 +23,7 @@ export class SuperAdminController {
     );
   }
 
+  @UseGuards(SuperAdminGuard)
   @Get('all-salons')
   async getAllSalons(): Promise<any> {
     return await firstValueFrom(
@@ -21,6 +31,7 @@ export class SuperAdminController {
     );
   }
 
+  @UseGuards(SuperAdminGuard)
   @Get('salon-documents/:salonId')
   async getSalonDocuments(@Param('salonId') salonId: string): Promise<any> {
     return await firstValueFrom(
@@ -28,6 +39,7 @@ export class SuperAdminController {
     );
   }
 
+  @UseGuards(SuperAdminGuard)
   @Get('salon-details/:salonId')
   async getSalonDetails(@Param('salonId') salonId: string): Promise<any> {
     return await firstValueFrom(
@@ -35,6 +47,7 @@ export class SuperAdminController {
     );
   }
 
+  @UseGuards(SuperAdminGuard)
   @Post('verify-salon')
   async verifySalon(@Body('salonId') salonId: string): Promise<any> {
     return await firstValueFrom(
@@ -42,6 +55,7 @@ export class SuperAdminController {
     );
   }
 
+  @UseGuards(SuperAdminGuard)
   @Post('fail-verification')
   async failVerification(@Body('salonId') salonId: string): Promise<any> {
     return await firstValueFrom(

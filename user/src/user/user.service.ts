@@ -3,7 +3,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from 'src/dto/createUserDTO';
 import * as bcrypt from 'bcrypt';
-import { RpcException } from '@nestjs/microservices';
 import { JwtService } from '@nestjs/jwt';
 import {
   CreateReviewDto,
@@ -137,39 +136,35 @@ export class UserService {
 
   //-----------------------User logging
   async login(loginUserDto: LoginUserDto): Promise<LoginUserResponseDTO> {
-    try {
-      const { email, password } = loginUserDto;
-      const user = await this.userRepository.findOne({ where: { email } });
-      if (!user) {
-        throw new RpcException('User not found');
-      }
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      if (!isPasswordValid) {
-        throw new RpcException('Invalid Credentials');
-      }
-      const token = this.jwtService.sign({
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        role: UserRole.Customer,
-      });
-      await this.userRepository.save(user);
-      return {
-        customerId: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        token,
-      };
-    } catch (error) {
-      // Re-throw RpcException if already thrown
-      if (error instanceof RpcException) {
-        throw error;
-      }
-
-      // Wrap unexpected errors
-      throw new RpcException(`Error logging in user: ${error}`);
+    const { email, password } = loginUserDto;
+    if (!email || !password) {
+      throw new GenericError(
+        'Email and password are required',
+        HttpStatus.BAD_REQUEST,
+      );
     }
+    const user = await this.userRepository.findOne({ where: { email } });
+    if (!user) {
+      throw new GenericError('User not found', HttpStatus.NOT_FOUND);
+    }
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new GenericError('Invalid Credentials', HttpStatus.UNAUTHORIZED);
+    }
+    const token = this.jwtService.sign({
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: UserRole.Customer,
+    });
+    await this.userRepository.save(user);
+    return {
+      customerId: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      token,
+    };
   }
 
   async getUserBookingsById(userId: string): Promise<any> {

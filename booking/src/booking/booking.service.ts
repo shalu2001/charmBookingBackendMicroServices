@@ -68,7 +68,6 @@ export class BookingService {
     bookingDate: string,
     startTime: string,
   ): Promise<CheckServiceTimeAvailabilityResponseDto> {
-    //TODO: Check for Salon holidays
     const service = await this.serviceRepository.findOne({
       where: { serviceId: salonServiceId },
       relations: ['salon'],
@@ -558,6 +557,7 @@ export class BookingService {
 
   async userCancelBooking(bookingId: string, reason: string): Promise<any> {
     console.log('Cancelling booking:', bookingId);
+    console.log('Reason for cancellation:', reason);
     const booking = await this.bookingRepository.findOne({
       where: { id: bookingId },
       relations: ['user', 'salonService', 'worker'],
@@ -648,7 +648,7 @@ export class BookingService {
       );
     }
     // If payment didn't happen, cancel the booking
-    if (booking.status === 'PENDING') {
+    if (booking.status === BookingStatus.PENDING) {
       booking.status = BookingStatus.CANCELLED;
       await this.bookingRepository.save(booking);
       return { message: 'Booking cancelled successfully' };

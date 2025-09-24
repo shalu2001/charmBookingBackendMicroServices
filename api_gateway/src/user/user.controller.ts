@@ -7,9 +7,11 @@ import {
   Query,
   Put,
   Param,
+  UseGuards,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
+import { CustomerGuard } from 'src/auth/auth.guard';
 
 @Controller('user')
 export class UserController {
@@ -25,6 +27,7 @@ export class UserController {
     return await firstValueFrom(this.client.send({ cmd: 'login' }, user));
   }
 
+  @UseGuards(CustomerGuard)
   @Get('getCustomerByID')
   async getCustomerByID(@Query('id') id: string): Promise<any> {
     return await firstValueFrom(
@@ -32,6 +35,7 @@ export class UserController {
     );
   }
 
+  @UseGuards(CustomerGuard)
   @Put('updateCustomerByID/:id')
   async updateCustomerByID(
     @Param('id') id: string,
@@ -46,6 +50,7 @@ export class UserController {
     );
   }
 
+  @UseGuards(CustomerGuard)
   @Put('updatePassword/:id')
   async updatePassword(
     @Param('id') id: string,
@@ -60,6 +65,7 @@ export class UserController {
     );
   }
 
+  @UseGuards(CustomerGuard)
   @Get(':id/getUserBookingsByID')
   async getUserBookingsByID(@Param('id') id: string): Promise<any> {
     return await firstValueFrom(
@@ -67,6 +73,7 @@ export class UserController {
     );
   }
 
+  @UseGuards(CustomerGuard)
   @Post(':userId/createReview/:bookingId')
   async createReview(
     @Param('userId') userId: string,
