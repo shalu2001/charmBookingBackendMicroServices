@@ -16,6 +16,11 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": false,
     "strictBindCallApply": false,
-    "noFallthroughCasesInSwitch": false
-  }
+    "noFallthroughCasesInSwitch": false,
+    "paths": {
+      "@charmbooking/common": ["../libs/common/src"],
+    }
+  },
+  "include": ["src/**/*", "../api_gateway/src/file-upload"],
+  "exclude": ["node_modules", "dist"],
 }

@@ -2,17 +2,18 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { dataSource } from '../data-source';
 import { ConfigModule } from '@nestjs/config';
+import { CommonModule } from '@charmbooking/common';
+import { SuperAdminModule } from './super-admin/super-admin.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot(dataSource.options),
+    CommonModule,
     UserModule,
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    SuperAdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

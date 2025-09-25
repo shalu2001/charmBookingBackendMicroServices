@@ -2,11 +2,44 @@ import { Module } from '@nestjs/common';
 import { SalonController } from './salon.controller';
 import { SalonService } from './salon.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Salon } from './salon.entity';
+import {
+  Salon,
+  SalonAdmin,
+  SalonDetails,
+  SalonDocuments,
+  SalonImage,
+  SalonReview,
+  SalonWeeklyHours,
+} from '@charmbooking/common';
+import { JwtModule } from '@nestjs/jwt/dist/jwt.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { getConfig } from '@charmbooking/common';
+import { BookingModule } from '../booking/booking.module';
+import { SalonVerifiedRepository } from './salon_verified.repository';
 
+const config = getConfig();
 @Module({
-  imports: [TypeOrmModule.forFeature([Salon])],
+  imports: [
+    BookingModule,
+    TypeOrmModule.forFeature([
+      Salon,
+      SalonImage,
+      SalonAdmin,
+      SalonWeeklyHours,
+      SalonReview,
+      SalonDetails,
+      SalonDocuments,
+    ]),
+    JwtModule.registerAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: () => ({
+        secret: config.jwt.secret,
+        signOptions: { expiresIn: config.jwt.expiration },
+      }),
+    }),
+  ],
   controllers: [SalonController],
-  providers: [SalonService],
+  providers: [SalonService, SalonVerifiedRepository],
 })
 export class SalonModule {}

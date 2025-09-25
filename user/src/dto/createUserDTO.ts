@@ -10,7 +10,7 @@ export class CreateUserDto {
   lastName: string;
 
   @IsDate()
-  dateofBirth: Date;
+  dateOfBirth: Date;
 
   @IsEmail()
   @Length(5, 50)
@@ -19,10 +19,6 @@ export class CreateUserDto {
   @IsString()
   @Length(6, 100)
   password: string;
-
-  @IsString()
-  @Length(1, 100)
-  role: string;
 
   // @IsOptional()
   // @IsString()
