@@ -12,9 +12,11 @@ import {
   Param,
   Post,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
+import { SalonAdminGuard } from 'src/auth/auth.guard';
 
 @Controller('booking')
 export class BookingController {
@@ -58,6 +60,7 @@ export class BookingController {
     return firstValueFrom(this.client.send(pattern, bookingData));
   }
 
+  @UseGuards(SalonAdminGuard)
   @Get(':salonId/bookings')
   async getBookings(@Param('salonId') salonId: string): Promise<any> {
     const pattern = { cmd: 'get_bookings' };

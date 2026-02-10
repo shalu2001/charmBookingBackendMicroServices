@@ -62,4 +62,11 @@ export class SalonWorkerController {
   //   async remove(@Param('id') id: string) {
   //     return firstValueFrom(this.client.send({ cmd: 'delete_salon_worker' }, id));
   //   }
+
+  @Get('/:salonId/getWorkerSchedules')
+  async getWorkerSchedules(@Param('salonId') salonId: UUID): Promise<any> {
+    return firstValueFrom(
+      this.client.send({ cmd: 'get_schedules_by_salon' }, salonId),
+    );
+  }
 }

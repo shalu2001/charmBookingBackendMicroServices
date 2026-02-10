@@ -3,6 +3,7 @@ import {
   Salon,
   SalonHoliday,
   SalonService,
+  SalonWeeklyHours,
   SalonWorker,
   SalonWorkerLeave,
 } from '@charmbooking/common';
@@ -16,6 +17,7 @@ import { SalonWorkerService } from './salon_worker.service';
     TypeOrmModule.forFeature([
       Salon,
       SalonService,
+      SalonWeeklyHours,
       SalonWorker,
       SalonWorkerLeave,
       SalonHoliday,

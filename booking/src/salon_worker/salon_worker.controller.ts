@@ -58,4 +58,9 @@ export class SalonWorkerController {
   // async deleteSalonWorker(id: string): Promise<any> {
   //     return this.salonWorkerService.deleteSalonWorker(id);
   // }
+
+  @MessagePattern({ cmd: 'get_schedules_by_salon' })
+  async getSchedulesBySalon(salonId: UUID): Promise<any> {
+    return this.salonWorkerService.getSalonWorkerSchedules(salonId);
+  }
 }
