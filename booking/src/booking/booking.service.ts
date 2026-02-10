@@ -547,7 +547,7 @@ export class BookingService {
     for (const booking of bookings) {
       const created_at = new Date(booking.created_at);
       const diffInHours =
-        (now.getTime() - created_at.getTime()) / (1000 * 60 * 60);
+        (now.getTime() - created_at.getTime()) / (1000 * 60 * 10);
       if (diffInHours > 1) {
         booking.status = BookingStatus.CANCELLED;
         await this.bookingRepository.save(booking);
