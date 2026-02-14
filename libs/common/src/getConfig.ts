@@ -1,6 +1,7 @@
 import { config } from 'dotenv';
 import * as path from 'path';
 import * as fs from 'fs';
+import { getSecret } from './keyVault';
 
 // Try multiple possible locations for .env
 const possiblePaths = [
@@ -22,10 +23,10 @@ if (envPath) {
 }
 
 type DatabaseConfig = {
-  host: string | undefined;
+  host: string;
   port: number;
-  username: string | undefined;
-  password: string | undefined;
+  username: string;
+  password: string;
 };
 
 type ServiceConfig = {
@@ -35,17 +36,17 @@ type ServiceConfig = {
 };
 
 type JwtConfig = {
-  secret: string | undefined;
-  expiration: string | undefined;
+  secret: string;
+  expiration: string;
 };
 
 type PayHereConfig = {
-  merchantId: string | undefined;
-  merchantSecret: string | undefined;
-  appId: string | undefined;
-  appSecret: string | undefined;
-  frontendUrl: string | undefined;
-  backendUrl: string | undefined;
+  merchantId: string;
+  merchantSecret: string;
+  appId: string;
+  appSecret: string;
+  frontendUrl: string;
+  backendUrl: string;
 };
 
 type AppConfig = {
@@ -55,34 +56,96 @@ type AppConfig = {
   payHere: PayHereConfig;
 };
 
-export const getConfig = (): AppConfig => ({
-  database: {
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT || '3306', 10),
-    username: process.env.DB_USERNAME,
-    password: process.env.DB_PASSWORD,
-  },
-  services: {
-    apiGateway: {
-      port: parseInt(process.env.API_GATEWAY_PORT || '3000', 10),
+/**
+ * Validate that all required configuration values are present
+ * Throws an error with details about missing values
+ */
+const validateConfig = (config: AppConfig): void => {
+  const missing: string[] = [];
+
+  // Check database config
+  if (!config.database.host) missing.push('DB_HOST');
+  if (!config.database.username) missing.push('DB_USERNAME');
+  if (!config.database.password) missing.push('DB_PASSWORD');
+
+  // Check JWT config
+  if (!config.jwt.secret) missing.push('JWT_SECRET');
+  if (!config.jwt.expiration) missing.push('JWT_EXPIRATION');
+
+  // Check PayHere config
+  if (!config.payHere.merchantId) missing.push('PH_MERCHANT_ID');
+  if (!config.payHere.merchantSecret) missing.push('PH_MERCHANT_SECRET');
+  if (!config.payHere.appId) missing.push('PH_APP_ID');
+  if (!config.payHere.appSecret) missing.push('PH_APP_SECRET');
+  if (!config.payHere.frontendUrl) missing.push('FRONTEND_URL');
+  if (!config.payHere.backendUrl) missing.push('BACKEND_URL');
+
+  if (missing.length > 0) {
+    const errorMessage = [
+      '',
+      '╔════════════════════════════════════════════════════════════════╗',
+      '║  CONFIGURATION ERROR: Missing Required Secrets                 ║',
+      '╚════════════════════════════════════════════════════════════════╝',
+      '',
+      'The following required configuration values are missing:',
+      ...missing.map((key) => `  ✗ ${key}`),
+      '',
+      'These secrets must be provided via:',
+      '  1. Azure Key Vault (recommended): Add secrets with names like "DB-HOST"',
+      '  2. Environment variables: Set in .env file or system environment',
+      '',
+      'Please ensure all required secrets are configured before starting the application.',
+      '',
+    ].join('\n');
+
+    throw new Error(errorMessage);
+  }
+};
+
+/**
+ * Get application configuration from Azure Key Vault or environment variables
+ * Priority: Azure Key Vault > Environment variables
+ *
+ * @param validate - If true (default), validates that all required secrets are present
+ * @returns Application configuration
+ * @throws Error if validation is enabled and required secrets are missing
+ */
+export const getConfig = (validate: boolean = true): AppConfig => {
+  const appConfig: AppConfig = {
+    database: {
+      host: getSecret('DB_HOST') || '',
+      port: parseInt(getSecret('DB_PORT') || '3306', 10),
+      username: getSecret('DB_USERNAME') || '',
+      password: getSecret('DB_PASSWORD') || '',
     },
-    booking: {
-      port: parseInt(process.env.BOOKING_SERVICE_PORT || '3001', 10),
+    services: {
+      apiGateway: {
+        port: parseInt(getSecret('API_GATEWAY_PORT') || '3000', 10),
+      },
+      booking: {
+        port: parseInt(getSecret('BOOKING_SERVICE_PORT') || '3001', 10),
+      },
+      user: {
+        port: parseInt(getSecret('USER_SERVICE_PORT') || '3002', 10),
+      },
     },
-    user: {
-      port: parseInt(process.env.USER_SERVICE_PORT || '3002', 10),
+    jwt: {
+      secret: getSecret('JWT_SECRET') || '',
+      expiration: getSecret('JWT_EXPIRATION') || '',
     },
-  },
-  jwt: {
-    secret: process.env.JWT_SECRET,
-    expiration: process.env.JWT_EXPIRATION,
-  },
-  payHere: {
-    merchantId: process.env.PH_MERCHANT_ID,
-    merchantSecret: process.env.PH_MERCHANT_SECRET,
-    appId: process.env.PH_APP_ID,
-    appSecret: process.env.PH_APP_SECRET,
-    frontendUrl: process.env.FRONTEND_URL,
-    backendUrl: process.env.BACKEND_URL,
-  },
-});
+    payHere: {
+      merchantId: getSecret('PH_MERCHANT_ID') || '',
+      merchantSecret: getSecret('PH_MERCHANT_SECRET') || '',
+      appId: getSecret('PH_APP_ID') || '',
+      appSecret: getSecret('PH_APP_SECRET') || '',
+      frontendUrl: getSecret('FRONTEND_URL') || '',
+      backendUrl: getSecret('BACKEND_URL') || '',
+    },
+  };
+
+  if (validate) {
+    validateConfig(appConfig);
+  }
+
+  return appConfig;
+};
