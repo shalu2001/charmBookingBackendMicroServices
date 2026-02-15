@@ -97,8 +97,9 @@ export class FileTypeValidatorService {
     }
 
     try {
-      // Dynamic import for ESM module
-      const { fileTypeFromBuffer } = await import('file-type');
+      // Use eval to bypass TypeScript/Node.js module resolution issues with ESM
+      const fileTypeModule = await eval('import("file-type")');
+      const { fileTypeFromBuffer } = fileTypeModule;
       
       // Use file-type library to detect actual MIME type from magic bytes
       const detectedFileType = await fileTypeFromBuffer(fileBuffer);

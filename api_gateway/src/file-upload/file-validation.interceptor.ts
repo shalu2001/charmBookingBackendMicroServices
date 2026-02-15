@@ -33,12 +33,27 @@ export class FileValidationInterceptor implements NestInterceptor {
     }
 
     try {
-      // Handle single file or multiple files
-      const filesToValidate = Array.isArray(files) ? files : [files];
+      // Handle different file structures from multer
+      let filesToValidate: Express.Multer.File[] = [];
+      
+      if (Array.isArray(files)) {
+        // FilesInterceptor - array of files
+        filesToValidate = files;
+      } else if (files && typeof files === 'object') {
+        // FileFieldsInterceptor - object with field names as keys
+        filesToValidate = Object.values(files).flat() as Express.Multer.File[];
+      } else if (files) {
+        // Single file
+        filesToValidate = [files];
+      }
+      
+      this.logger.debug(`Validating ${filesToValidate.length} file(s)`);
       
       // Validate each uploaded file
       await Promise.all(
         filesToValidate.map(async (file: Express.Multer.File) => {
+          this.logger.debug(`Validating file: ${file.originalname} at path: ${file.path}`);
+          
           if (file.buffer) {
             await this.fileTypeValidator.validateFileType(
               file.buffer,
@@ -49,6 +64,11 @@ export class FileValidationInterceptor implements NestInterceptor {
             // For disk storage, we need to read the file
             const fs = await import('fs');
             try {
+              if (!file.path) {
+                throw new Error('File path is missing - file may not have been saved');
+              }
+              
+              this.logger.debug(`Reading file from disk: ${file.path}`);
               const fileBuffer = fs.readFileSync(file.path);
               await this.fileTypeValidator.validateFileType(
                 fileBuffer,
@@ -57,6 +77,7 @@ export class FileValidationInterceptor implements NestInterceptor {
               );
             } catch (error) {
               this.logger.error(`Failed to read file for validation: ${error.message}`);
+              this.logger.error(`File details - originalname: ${file.originalname}, path: ${file.path}`);
               throw new BadRequestException('File validation failed - could not read file');
             }
           }

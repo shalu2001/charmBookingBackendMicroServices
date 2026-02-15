@@ -45,8 +45,11 @@ const secureStorage = diskStorage({
   destination: './uploads',
   filename: (req, file, cb) => {
     try {
+      console.log(`Processing file upload: ${file.originalname}`);
+      
       // Check for path traversal attempts
       if (file.originalname.includes('../') || file.originalname.includes('..\\')) {
+        console.error(`Path traversal detected: ${file.originalname}`);
         return cb(new Error('Path traversal attempt detected in filename'), '');
       }
       
@@ -55,19 +58,26 @@ const secureStorage = diskStorage({
         .replace(/[\x00-\x1f\x7f-\x9f]/g, '') // Remove control characters
         .replace(/[<>:"/\\|?*]/g, '_') // Remove filesystem-dangerous chars
         .replace(/^\.+/, '') // Remove leading dots
-        .replace(/[^a-zA-Z0-9.-]/g, '_') // Replace remaining special chars
+        .replace(/[^a-zA-Z0-9.\-_\s]/g, '_') // Replace dangerous chars, keep spaces, underscores, hyphens
+        .replace(/\s+/g, '_') // Convert spaces to underscores
         .substring(0, 100); // Limit length
+      
+      console.log(`Sanitized filename: ${sanitizedName}`);
       
       // Ensure we have a valid filename
       if (!sanitizedName || sanitizedName.trim() === '') {
+        console.error(`Empty filename after sanitization: ${file.originalname}`);
         return cb(new Error('Invalid filename after sanitization'), '');
       }
       
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
       const extension = extname(sanitizedName);
+      const finalFilename = `${file.fieldname}-${uniqueSuffix}${extension}`;
       
-      cb(null, `${file.fieldname}-${uniqueSuffix}${extension}`);
+      console.log(`Final filename: ${finalFilename}`);
+      cb(null, finalFilename);
     } catch (error) {
+      console.error(`Filename generation error: ${error.message}`, error);
       cb(new Error(`Filename generation failed: ${error.message}`), '');
     }
   },
