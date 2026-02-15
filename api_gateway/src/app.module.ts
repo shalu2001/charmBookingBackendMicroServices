@@ -5,6 +5,8 @@ import { BookingModule } from './booking/booking.module';
 import { UserModule } from './user/user.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { APP_FILTER } from '@nestjs/core';
+import { FileUploadExceptionFilter } from './file-upload/file-upload-exception.filter';
 
 @Module({
   imports: [
@@ -19,6 +21,12 @@ import { join } from 'path';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: FileUploadExceptionFilter,
+    },
+  ],
 })
 export class AppModule {}
