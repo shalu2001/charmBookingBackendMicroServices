@@ -1,5 +1,5 @@
 import { diskStorage } from 'multer';
-import { extname } from 'path';
+import { extname, basename } from 'path';
 import { FileTypeValidatorService, FileCategory } from './file-type-validator.service';
 
 // Create a singleton instance for validation
@@ -45,10 +45,23 @@ const secureStorage = diskStorage({
   destination: './uploads',
   filename: (req, file, cb) => {
     try {
-      // Sanitize original filename
-      const sanitizedName = file.originalname
-        .replace(/[^a-zA-Z0-9.-]/g, '_') // Replace special chars
+      // Check for path traversal attempts
+      if (file.originalname.includes('../') || file.originalname.includes('..\\')) {
+        return cb(new Error('Path traversal attempt detected in filename'), '');
+      }
+      
+      // Use basename to strip any directory paths and sanitize filename
+      const sanitizedName = basename(file.originalname)
+        .replace(/[\x00-\x1f\x7f-\x9f]/g, '') // Remove control characters
+        .replace(/[<>:"/\\|?*]/g, '_') // Remove filesystem-dangerous chars
+        .replace(/^\.+/, '') // Remove leading dots
+        .replace(/[^a-zA-Z0-9.-]/g, '_') // Replace remaining special chars
         .substring(0, 100); // Limit length
+      
+      // Ensure we have a valid filename
+      if (!sanitizedName || sanitizedName.trim() === '') {
+        return cb(new Error('Invalid filename after sanitization'), '');
+      }
       
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
       const extension = extname(sanitizedName);
