@@ -1,5 +1,6 @@
 import { diskStorage } from 'multer';
 import { extname, basename } from 'path';
+import { v4 as uuidv4 } from 'uuid';
 import { FileTypeValidatorService, FileCategory } from './file-type-validator.service';
 
 // Create a singleton instance for validation
@@ -70,9 +71,9 @@ const secureStorage = diskStorage({
         return cb(new Error('Invalid filename after sanitization'), '');
       }
       
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+      const uniqueId = uuidv4();
       const extension = extname(sanitizedName);
-      const finalFilename = `${file.fieldname}-${uniqueSuffix}${extension}`;
+      const finalFilename = `${uniqueId}${extension}`;
       
       console.log(`Final filename: ${finalFilename}`);
       cb(null, finalFilename);
